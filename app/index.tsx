@@ -65,9 +65,9 @@ export default function Index() {
   };
 
   const content = loading
-    ? "Connecting to backend..."
+    ? "Conectando al backend..."
     : error
-      ? `Error fetching API: ${error}`
+      ? `Error: ${error}`
       : JSON.stringify(data, null, 2);
 
   return (
