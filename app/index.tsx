@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 const API_URL = "https://inventory-manager-backend-zd9h.onrender.com/";
 
@@ -7,6 +7,7 @@ export default function Index() {
   const [data, setData] = useState<unknown>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isKeysRevealed, setIsKeysRevealed] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -44,6 +45,25 @@ export default function Index() {
     };
   }, []);
 
+  const handleRevealKeys = () => {
+    Alert.alert(
+      "⚠️ Información Sensible",
+      "Las API keys incluyen información sensible que podría comprometer la seguridad de toda la aplicación. ¿Estás seguro que quieres continuar?",
+      [
+        {
+          text: "Cancelar",
+          onPress: () => {},
+          style: "cancel",
+        },
+        {
+          text: "Continuar",
+          onPress: () => setIsKeysRevealed(true),
+          style: "destructive",
+        },
+      ]
+    );
+  };
+
   const content = loading
     ? "Connecting to backend..."
     : error
@@ -56,6 +76,10 @@ export default function Index() {
       <ScrollView style={styles.responseBox} contentContainerStyle={styles.responseContent}>
         <Text style={styles.responseText}>{content}</Text>
       </ScrollView>
+      <Pressable style={styles.revealButton} onPress={handleRevealKeys}>
+        <Text style={styles.revealButtonText}>🔓 Revelar API keys</Text>
+      </Pressable>
+      {isKeysRevealed && <Text style={styles.jokeText}>Broma</Text>}
     </View>
   );
 }
@@ -77,6 +101,28 @@ const styles = StyleSheet.create({
     color: "#94a3b8",
     fontSize: 14,
     marginBottom: 20,
+  },
+  revealButton: {
+    backgroundColor: "#dc2626",
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    marginBottom: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  revealButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+  },
+  jokeText: {
+    color: "#fbbf24",
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 12,
+    textAlign: "center",
   },
   responseBox: {
     borderRadius: 16,
