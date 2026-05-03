@@ -6,8 +6,8 @@ on:
       - main
 
 jobs:
-  build:
-    name: EAS Build (preview)
+  update:
+    name: EAS Update (OTA)
     runs-on: ubuntu-latest
 
     steps:
@@ -29,5 +29,5 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: EAS Build
-        run: eas build --platform android --profile preview --non-interactive --no-wait
+      - name: Publish OTA update
+        run: eas update --channel preview --message "${{ github.event.head_commit.message }}" --non-interactive
