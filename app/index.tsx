@@ -72,7 +72,7 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Backend response</Text>
+      <Text style={styles.title}>Conexión con backend</Text>
       <ScrollView style={styles.responseBox} contentContainerStyle={styles.responseContent}>
         <Text style={styles.responseText}>{content}</Text>
       </ScrollView>

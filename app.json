@@ -56,7 +56,8 @@
       "policy": "fingerprint"
     },
     "updates": {
-      "url": "https://u.expo.dev/eb720bec-9a9e-4f4e-b4bc-50b225e45db0"
+      "url": "https://u.expo.dev/eb720bec-9a9e-4f4e-b4bc-50b225e45db0",
+      "checkAutomatically": "ON_LOAD"
     }
   }
 }
