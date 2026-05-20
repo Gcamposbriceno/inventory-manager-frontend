@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 
 const API_URL = "https://inventory-manager-backend-zd9h.onrender.com/";
 
@@ -50,17 +50,13 @@ export default function Index() {
       "⚠️ Información Sensible",
       "Las API keys incluyen información sensible que podría comprometer la seguridad de toda la aplicación. ¿Estás seguro que quieres continuar?",
       [
-        {
-          text: "Cancelar",
-          onPress: () => {},
-          style: "cancel",
-        },
+        { text: "Cancelar", onPress: () => {}, style: "cancel" },
         {
           text: "Continuar",
           onPress: () => setIsKeysRevealed(true),
           style: "destructive",
         },
-      ]
+      ],
     );
   };
 
@@ -71,73 +67,31 @@ export default function Index() {
       : JSON.stringify(data, null, 2);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Conexión con backend</Text>
-      <ScrollView style={styles.responseBox} contentContainerStyle={styles.responseContent}>
-        <Text style={styles.responseText}>{content}</Text>
+    <View className="flex-1 bg-slate-900 p-6 justify-center">
+      <Text className="text-slate-50 text-3xl font-bold mb-2">
+        Conexión con backend
+      </Text>
+      <ScrollView
+        className="rounded-2xl bg-gray-900 border border-slate-700 max-h-[70%] mb-4"
+        contentContainerClassName="p-4"
+      >
+        <Text className="text-slate-200 font-mono text-sm leading-5">
+          {content}
+        </Text>
       </ScrollView>
-      <Pressable style={styles.revealButton} onPress={handleRevealKeys}>
-        <Text style={styles.revealButtonText}>🔓 Revelar API keys</Text>
+      <Pressable
+        className="bg-red-600 py-3.5 px-5 rounded-xl mb-4 items-center justify-center"
+        onPress={handleRevealKeys}
+      >
+        <Text className="text-white text-base font-bold tracking-wide">
+          🔓 Revelar API keys
+        </Text>
       </Pressable>
-      {isKeysRevealed && <Text style={styles.jokeText}>Broma</Text>}
+      {isKeysRevealed && (
+        <Text className="text-amber-400 text-lg font-bold mb-3 text-center">
+          Broma
+        </Text>
+      )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#0f172a",
-    padding: 24,
-    justifyContent: "center",
-  },
-  title: {
-    color: "#f8fafc",
-    fontSize: 28,
-    fontWeight: "700",
-    marginBottom: 8,
-  },
-  subtitle: {
-    color: "#94a3b8",
-    fontSize: 14,
-    marginBottom: 20,
-  },
-  revealButton: {
-    backgroundColor: "#dc2626",
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    marginBottom: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  revealButtonText: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "700",
-    letterSpacing: 0.5,
-  },
-  jokeText: {
-    color: "#fbbf24",
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 12,
-    textAlign: "center",
-  },
-  responseBox: {
-    borderRadius: 16,
-    backgroundColor: "#111827",
-    borderWidth: 1,
-    borderColor: "#334155",
-    maxHeight: "70%",
-  },
-  responseContent: {
-    padding: 16,
-  },
-  responseText: {
-    color: "#e2e8f0",
-    fontFamily: "monospace",
-    fontSize: 14,
-    lineHeight: 20,
-  },
-});

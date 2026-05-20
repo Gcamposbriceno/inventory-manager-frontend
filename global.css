@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Brand */
+  --color-brand-primary:   #2D6A4F;
+  --color-brand-light:     #D8F3DC;
+  --color-brand-dark:      #1B4332;
+
+  /* Backgrounds */
+  --color-bg-base:         #F8F7F4;
+  --color-bg-surface:      #FFFFFF;
+  --color-bg-muted:        #E8E6E1;
+
+  /* Text */
+  --color-text-primary:    #1C1C1A;
+  --color-text-secondary:  #5A5955;
+  --color-text-tertiary:   #9E9B95;
+  --color-text-inverse:    #FFFFFF;
+
+  /* Semantic */
+  --color-fresh:           #52B788;
+  --color-warn:            #E9C46A;
+  --color-expired:         #E76F51;
+
+  /* Borders */
+  --color-border-default:  #E8E6E1;
+  --color-border-focus:    #2D6A4F;
+
+  /* Border radius */
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-lg:   16px;
+  --radius-xl:   24px;
+  --radius-full: 9999px;
+
+  /* Spacing */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Typography */
+  --font-display: 'DM Serif Display', serif;
+  --font-body:    System, -apple-system, sans-serif;
+
+  /* Shadows */
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg-base:          #161614;
+    --color-bg-surface:       #1E1E1C;
+    --color-text-primary:     #F2F0EB;
+    --color-text-secondary:   #A8A5A0;
+    --color-border-default:   #2E2E2C;
+  }
+}
