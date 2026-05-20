@@ -118,8 +118,8 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-slate-50 dark:bg-gray-950" edges={['top']}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View className="px-5 pt-2 pb-8">
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerClassName="px-5 pt-2 pb-28">
+        <View>
 
           {/* Header */}
           <View className="flex-row justify-between items-start mb-4">
