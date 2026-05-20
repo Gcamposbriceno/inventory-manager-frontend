@@ -36,30 +36,30 @@ const OFFERS = [
   { id: 5, name: 'Yogur Natural',         brand: 'Colún',   qty: '1 kg',   price: 2190, originalPrice: 2790, icon: 'cafe-outline'       as IconName },
 ];
 
-// Icon colors must be hex — derived from isDark since Ionicons doesn't accept className
+// Icon colors must be hex — Ionicons doesn't accept className
 function iconColors(isDark: boolean) {
   return {
-    muted:    isDark ? '#9CA3AF' : '#64748B',
-    primary:  isDark ? '#60A5FA' : '#1D4ED8',
-    amber:    isDark ? '#FCD34D' : '#B45309',
+    muted:   '#9E9B95',
+    primary: isDark ? '#52B788' : '#1B4332',
+    warn:    isDark ? '#E9C46A' : '#92400E',
   };
 }
 
 function StockRow({ item, isDark, isLast }: { item: typeof LOW_STOCK[0]; isDark: boolean; isLast: boolean }) {
   const ratio = Math.min(item.current / item.min, 1);
   const ic = iconColors(isDark);
-  const barColor = ratio < 0.4 ? (isDark ? '#F87171' : '#DC2626') : ic.amber;
+  const barColor = ratio < 0.4 ? '#E76F51' : ic.warn;
 
   return (
     <View>
       <View className="flex-row items-center justify-between px-4 pt-3.5 pb-2">
         <View className="flex-row items-center gap-2.5">
           <View className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950 items-center justify-center">
-            <Ionicons name="cube-outline" size={15} color={ic.amber} />
+            <Ionicons name="cube-outline" size={15} color={ic.warn} />
           </View>
           <View>
-            <Text className="text-[15px] font-semibold text-slate-900 dark:text-gray-50">{item.name}</Text>
-            <Text className="text-[12px] text-slate-500 dark:text-gray-400 mt-0.5">
+            <Text className="text-[15px] font-semibold text-ink dark:text-[#F2F0EB]">{item.name}</Text>
+            <Text className="text-[12px] text-pebble mt-0.5">
               {item.current} / {item.min} {item.unit}
             </Text>
           </View>
@@ -68,10 +68,10 @@ function StockRow({ item, isDark, isLast }: { item: typeof LOW_STOCK[0]; isDark:
           <Text className="text-[11px] font-bold text-amber-700 dark:text-amber-400">Bajo mín.</Text>
         </View>
       </View>
-      <View className="mx-4 mb-3.5 h-1.5 rounded-full bg-slate-100 dark:bg-gray-800">
+      <View className="mx-4 mb-3.5 h-1.5 rounded-full bg-stone dark:bg-[#2E2E2C]">
         <View className="h-1.5 rounded-full" style={{ width: `${ratio * 100}%`, backgroundColor: barColor }} />
       </View>
-      {!isLast && <View className="h-px mx-4 bg-slate-100 dark:bg-gray-800" />}
+      {!isLast && <View className="h-px mx-4 bg-stone dark:bg-[#2E2E2C]" />}
     </View>
   );
 }
@@ -81,22 +81,22 @@ function OfferCard({ offer, isDark }: { offer: typeof OFFERS[0]; isDark: boolean
   const ic = iconColors(isDark);
 
   return (
-    <Pressable className="w-36 rounded-2xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-3.5 active:opacity-75">
-      <View className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950 items-center justify-center mb-1">
+    <Pressable className="w-36 rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] p-3.5 active:opacity-75">
+      <View className="w-11 h-11 rounded-xl bg-mist dark:bg-[#0D2B1A] items-center justify-center mb-1">
         <Ionicons name={offer.icon} size={22} color={ic.primary} />
       </View>
-      <View className="absolute top-2.5 right-2.5 px-1.5 py-0.5 rounded-lg bg-blue-600">
-        <Text className="text-[11px] font-bold text-white">-{pct}%</Text>
+      <View className="absolute top-2.5 right-2.5 px-1.5 py-0.5 rounded-lg bg-forest">
+        <Text className="text-[11px] font-bold text-cream">-{pct}%</Text>
       </View>
-      <Text className="text-[13px] font-semibold text-slate-900 dark:text-gray-50 leading-tight" numberOfLines={2}>
+      <Text className="text-[13px] font-semibold text-ink dark:text-[#F2F0EB] leading-tight" numberOfLines={2}>
         {offer.name}
       </Text>
-      <Text className="text-[11px] text-slate-500 dark:text-gray-400 mt-0.5">{offer.brand} · {offer.qty}</Text>
+      <Text className="text-[11px] text-pebble mt-0.5">{offer.brand} · {offer.qty}</Text>
       <View className="flex-row items-baseline gap-1.5 mt-1">
-        <Text className="text-[15px] font-bold text-slate-900 dark:text-gray-50">
+        <Text className="text-[15px] font-bold text-ink dark:text-[#F2F0EB]">
           ${offer.price.toLocaleString('es-CL')}
         </Text>
-        <Text className="text-[12px] text-slate-400 dark:text-gray-600 line-through">
+        <Text className="text-[12px] text-pebble line-through">
           ${offer.originalPrice.toLocaleString('es-CL')}
         </Text>
       </View>
@@ -116,57 +116,57 @@ export default function HomeScreen() {
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50 dark:bg-gray-950" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-cream dark:bg-[#161614]" edges={['top']}>
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerClassName="px-5 pt-2 pb-28">
         <View>
 
           {/* Header */}
           <View className="flex-row justify-between items-start mb-4">
             <View>
-              <Text className="text-[26px] font-bold tracking-tight text-slate-900 dark:text-gray-50">
+              <Text className="font-display text-[28px] text-ink dark:text-[#F2F0EB]">
                 {greeting()}
               </Text>
-              <Text className="text-[13px] text-slate-500 dark:text-gray-400 mt-0.5 capitalize">
+              <Text className="text-[13px] text-pebble mt-0.5 capitalize">
                 {formattedDate()}
               </Text>
             </View>
-            <Pressable className="w-10 h-10 rounded-full bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 items-center justify-center active:opacity-70">
+            <Pressable className="w-10 h-10 rounded-full bg-white dark:bg-[#1E1E1C] border border-stone dark:border-[#2E2E2C] items-center justify-center active:opacity-70">
               <Ionicons name="notifications-outline" size={20} color={ic.muted} />
             </Pressable>
           </View>
 
-          {/* Alert strip — left-border accent via a sibling View */}
+          {/* Alert strip */}
           <Pressable className="flex-row rounded-xl overflow-hidden bg-amber-50 dark:bg-amber-950 mb-6 active:opacity-80">
             <View className="w-1 bg-amber-500" />
             <View className="flex-1 flex-row items-center gap-2 px-3 py-3">
-              <Ionicons name="warning-outline" size={15} color={ic.amber} />
+              <Ionicons name="warning-outline" size={15} color={ic.warn} />
               <Text className="flex-1 text-[13px] font-semibold text-amber-700 dark:text-amber-300">
                 {LOW_STOCK.length} productos bajo el mínimo de stock
               </Text>
-              <Ionicons name="chevron-forward" size={14} color={ic.amber} />
+              <Ionicons name="chevron-forward" size={14} color={ic.warn} />
             </View>
           </Pressable>
 
           {/* Inline stats */}
-          <View className="flex-row items-center border border-slate-200 dark:border-gray-800 rounded-2xl p-5 mb-7">
+          <View className="flex-row items-center border border-stone dark:border-[#2E2E2C] rounded-2xl p-5 mb-7">
             <View className="flex-1 items-center gap-1">
-              <Text className="text-[30px] font-bold leading-none text-slate-900 dark:text-gray-50">24</Text>
-              <Text className="text-[11px] font-medium text-slate-500 dark:text-gray-400">Productos</Text>
+              <Text className="text-[30px] font-bold leading-none text-ink dark:text-[#F2F0EB]">24</Text>
+              <Text className="text-[11px] font-medium text-pebble">Productos</Text>
             </View>
-            <View className="w-px h-9 bg-slate-200 dark:bg-gray-700" />
+            <View className="w-px h-9 bg-stone dark:bg-[#2E2E2C]" />
             <View className="flex-1 items-center gap-1">
               <Text className="text-[30px] font-bold leading-none text-amber-600 dark:text-amber-400">3</Text>
-              <Text className="text-[11px] font-medium text-slate-500 dark:text-gray-400">Bajo mínimo</Text>
+              <Text className="text-[11px] font-medium text-pebble">Bajo mínimo</Text>
             </View>
-            <View className="w-px h-9 bg-slate-200 dark:bg-gray-700" />
+            <View className="w-px h-9 bg-stone dark:bg-[#2E2E2C]" />
             <View className="flex-1 items-center gap-1">
-              <Text className="text-[30px] font-bold leading-none text-slate-900 dark:text-gray-50">0</Text>
-              <Text className="text-[11px] font-medium text-slate-500 dark:text-gray-400">En lista</Text>
+              <Text className="text-[30px] font-bold leading-none text-ink dark:text-[#F2F0EB]">0</Text>
+              <Text className="text-[11px] font-medium text-pebble">En lista</Text>
             </View>
           </View>
 
           {/* Quick actions */}
-          <Text className="text-[11px] font-bold tracking-widest uppercase text-slate-500 dark:text-gray-400 mb-3">
+          <Text className="text-[11px] font-bold tracking-widest uppercase text-pebble mb-3">
             Acciones rápidas
           </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-7">
@@ -174,11 +174,11 @@ export default function HomeScreen() {
               {quickActions.map((a) => (
                 <Pressable
                   key={a.label}
-                  className="flex-row items-center gap-2 py-2.5 px-4 rounded-full bg-blue-50 dark:bg-blue-950 active:opacity-70"
+                  className="flex-row items-center gap-2 py-2.5 px-4 rounded-full bg-mist dark:bg-[#0D2B1A] active:opacity-70"
                   onPress={a.onPress}
                 >
                   <Ionicons name={a.icon} size={18} color={ic.primary} />
-                  <Text className="text-[14px] font-semibold text-blue-700 dark:text-blue-400">{a.label}</Text>
+                  <Text className="text-[14px] font-semibold text-forest dark:text-mint">{a.label}</Text>
                 </Pressable>
               ))}
             </View>
@@ -186,14 +186,14 @@ export default function HomeScreen() {
 
           {/* Low stock */}
           <View className="flex-row justify-between items-center mb-3">
-            <Text className="text-[11px] font-bold tracking-widest uppercase text-slate-500 dark:text-gray-400">
+            <Text className="text-[11px] font-bold tracking-widest uppercase text-pebble">
               Bajo mínimo
             </Text>
             <Pressable onPress={() => router.push('/(tabs)/despensa')}>
-              <Text className="text-[13px] font-semibold text-blue-700 dark:text-blue-400">Ver todos</Text>
+              <Text className="text-[13px] font-semibold text-forest dark:text-mint">Ver todos</Text>
             </Pressable>
           </View>
-          <View className="rounded-2xl border border-slate-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden mb-7">
+          <View className="rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] overflow-hidden mb-7">
             {LOW_STOCK.map((item, i) => (
               <StockRow key={item.id} item={item} isDark={isDark} isLast={i === LOW_STOCK.length - 1} />
             ))}
@@ -202,13 +202,13 @@ export default function HomeScreen() {
           {/* Offers */}
           <View className="flex-row justify-between items-end mb-3">
             <View>
-              <Text className="text-[11px] font-bold tracking-widest uppercase text-slate-500 dark:text-gray-400">
+              <Text className="text-[11px] font-bold tracking-widest uppercase text-pebble">
                 Ofertas de Jumbo
               </Text>
-              <Text className="text-[11px] text-slate-400 dark:text-gray-500 mt-0.5">Actualizado hoy</Text>
+              <Text className="text-[11px] text-pebble mt-0.5">Actualizado hoy</Text>
             </View>
             <Pressable>
-              <Text className="text-[13px] font-semibold text-blue-700 dark:text-blue-400">Ver todas</Text>
+              <Text className="text-[13px] font-semibold text-forest dark:text-mint">Ver todas</Text>
             </Pressable>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>

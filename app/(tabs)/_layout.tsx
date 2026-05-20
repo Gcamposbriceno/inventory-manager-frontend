@@ -7,8 +7,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
 const COLORS = {
-  light: { bar: '#FFFFFF', border: '#E2E8F0', active: '#1D4ED8', inactive: '#64748B' },
-  dark:  { bar: '#111827', border: '#1F2937', active: '#60A5FA', inactive: '#9CA3AF' },
+  light: { bar: '#F8F7F4', border: '#E8E6E1', active: '#1B4332', inactive: '#9E9B95' },
+  dark:  { bar: '#161614', border: '#2E2E2C', active: '#52B788', inactive: '#9E9B95' },
 };
 
 function TabIcon({ name, focused }: { name: IconName; focused: boolean }) {

@@ -37,7 +37,7 @@ export default function PantryJoinScreen() {
 
             <Pressable
               className="bg-forest py-4 rounded-xl items-center active:opacity-80"
-              onPress={() => {}}
+              onPress={() => router.replace('/(tabs)')}
             >
               <Text className="text-cream font-semibold text-base">Unirse</Text>
             </Pressable>

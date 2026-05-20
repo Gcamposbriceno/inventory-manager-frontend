@@ -16,7 +16,13 @@ export default function PantryCreateScreen() {
           <Text className="font-display text-5xl text-forest mb-4 text-center">
             Crear despensa
           </Text>
-          <Text className="text-pebble text-base text-center">Próximamente</Text>
+          <Text className="text-pebble text-base text-center mb-12">Próximamente</Text>
+          <Pressable
+            className="bg-forest py-4 px-10 rounded-xl items-center active:opacity-80"
+            onPress={() => router.replace('/(tabs)')}
+          >
+            <Text className="text-cream font-semibold text-base">Continuar</Text>
+          </Pressable>
         </View>
       </View>
     </SafeAreaView>
