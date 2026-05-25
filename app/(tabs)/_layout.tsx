@@ -48,14 +48,10 @@ export default function TabLayout() {
     >
       <Tabs.Screen name="index"    options={{ title: 'Inicio',   tabBarIcon: ({ focused }) => <TabIcon name="home"           focused={focused} /> }} />
       <Tabs.Screen name="despensa" options={{ title: 'Despensa', tabBarIcon: ({ focused }) => <TabIcon name="file-tray-full" focused={focused} /> }} />
-      <Tabs.Screen name="recetas/index" options={{ title: 'Recetas', tabBarIcon: ({ focused }) => <TabIcon name="book" focused={focused} /> }} />
+      <Tabs.Screen name="recetas" options={{ title: 'Recetas', tabBarIcon: ({ focused }) => <TabIcon name="book" focused={focused} /> }} />
       <Tabs.Screen name="lista"    options={{ title: 'Lista',    tabBarIcon: ({ focused }) => <TabIcon name="cart"           focused={focused} /> }} />
       <Tabs.Screen name="historial"options={{ title: 'Historial',tabBarIcon: ({ focused }) => <TabIcon name="time"           focused={focused} /> }} />
       <Tabs.Screen name="settings" options={{ title: 'Ajustes',  tabBarIcon: ({ focused }) => <TabIcon name="settings"      focused={focused} /> }} />
-      <Tabs.Screen name="recetas/[id]" options={{ href: null }} />
-      <Tabs.Screen name="recetas/publicas" options={{ href: null }} />
-      <Tabs.Screen name="recetas/publicas/index" options={{ href: null }} />
-      <Tabs.Screen name="recetas/publicas/[id]" options={{ href: null }} />
     </Tabs>
   );
 }

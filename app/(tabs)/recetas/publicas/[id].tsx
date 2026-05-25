@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { RECIPES } from '../mock_recetas';
+import { RECIPES } from '../_mock_recetas';
 
 export default function RecipeDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -35,7 +35,7 @@ export default function RecipeDetailScreen() {
         >
           {/* Back */}
           <Pressable
-            onPress={() => router.replace('/recetas/publicas')}
+            onPress={() => router.back()}
             className="w-10 h-10 rounded-full bg-white dark:bg-[#1E1E1C] border border-stone dark:border-[#2E2E2C] items-center justify-center mb-5 active:opacity-80"
           >
             <Ionicons

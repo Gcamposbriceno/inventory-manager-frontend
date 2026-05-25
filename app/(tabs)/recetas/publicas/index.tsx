@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { RECIPES } from '../mock_recetas';
+import { RECIPES } from '../_mock_recetas';
 
 function RecipeCard({ recipe }: { recipe: typeof RECIPES[0] }) {
   return (
@@ -90,12 +90,12 @@ export default function RecetasScreen() {
 
         {/* Explorar */}
         <Pressable
-          onPress={() => router.push('/recetas')}
+          onPress={() => router.back()}
           className="flex-row items-center justify-center gap-2 rounded-2xl bg-forest py-4 mb-4 active:opacity-80"
         >
           <Ionicons name="search-outline" size={18} color="#F8F7F4" />
           <Text className="text-[15px] font-semibold text-cream">
-            Volver a "Mis Recetas"
+            Volver a Mis Recetas
           </Text>
         </Pressable>
 

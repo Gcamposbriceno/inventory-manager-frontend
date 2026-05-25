@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { RECIPES } from './mock_recetas';
+import { RECIPES } from './_mock_recetas';
 
 function RecipeCard({ recipe }: { recipe: typeof RECIPES[0] }) {
   return (
