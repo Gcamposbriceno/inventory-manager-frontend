@@ -101,8 +101,8 @@ export default function RecipeDetailScreen() {
             </Text>
           </Pressable>
 
-          {/* Descripción */}
-          <View className="rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] p-4">
+          {/* Preparación */}
+          <View className="rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] p-4 mb-4">
             <Text className="text-[11px] font-bold tracking-widest uppercase text-pebble mb-2">
               Preparación
             </Text>
@@ -111,6 +111,18 @@ export default function RecipeDetailScreen() {
               {recipe.description}
             </Text>
           </View>
+
+          {/* Ingredientes */}
+          <View className="rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] p-4">
+            <Text className="text-[11px] font-bold tracking-widest uppercase text-pebble mb-2">
+              Ingredientes
+            </Text>
+
+            <Text className="text-[14px] text-ink dark:text-[#F2F0EB] leading-6">
+              Placeholder de ingredientes
+            </Text>
+          </View>
+
         </ScrollView>
       </SafeAreaView>
     </>
