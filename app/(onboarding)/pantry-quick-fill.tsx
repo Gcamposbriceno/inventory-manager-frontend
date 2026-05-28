@@ -8,7 +8,9 @@ import {
   Alert,
   Animated,
   BackHandler,
+  Keyboard,
   PanResponder,
+  Platform,
   Pressable,
   Text,
   TextInput,
@@ -33,6 +35,7 @@ export default function PantryQuickFillScreen() {
   const cardBottomPadding = useRef(new Animated.Value(0)).current;
   const overlayOpacity = useRef(new Animated.Value(1)).current;
   const cardOpacity = useRef(new Animated.Value(1)).current;
+  const panelBottom = useRef(new Animated.Value(25)).current;
   const intentionalExit = useRef(false);
 
   const cardRotation = pan.x.interpolate({
@@ -56,6 +59,29 @@ export default function PantryQuickFillScreen() {
   // Multiplied by overlayOpacity so both go to 0 instantly during card transitions
   const combinedYesOpacity = useRef(Animated.multiply(yesOpacity, overlayOpacity)).current;
   const combinedNoOpacity = useRef(Animated.multiply(noOpacity, overlayOpacity)).current;
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const show = Keyboard.addListener(showEvent, (e) => {
+      Animated.timing(panelBottom, {
+        toValue: e.endCoordinates.height + 10,
+        duration: e.duration ?? 250,
+        useNativeDriver: false,
+      }).start();
+    });
+    const hide = Keyboard.addListener(hideEvent, (e) => {
+      Animated.timing(panelBottom, {
+        toValue: 25,
+        duration: e.duration ?? 200,
+        useNativeDriver: false,
+      }).start();
+    });
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Android hardware back button closes quantity panel instead of navigating back
   useEffect(() => {
@@ -374,67 +400,71 @@ export default function PantryQuickFillScreen() {
       {/* ── Panel de cantidad ── */}
       {showQuantity && (
         <Animated.View
-          className="bg-white dark:bg-[#1E1E1C]"
           style={{
-            transform: [{ translateY: quantityPanelY }],
             position: 'absolute',
-            bottom: 0,
+            bottom: panelBottom,
             left: 0,
             right: 0,
-            borderTopLeftRadius: 24,
-            borderTopRightRadius: 24,
-            paddingBottom: 40,
-            paddingHorizontal: 24,
-            paddingTop: 24,
             shadowColor: '#000',
             shadowOpacity: 0.12,
             shadowRadius: 20,
             elevation: 10,
           }}
         >
-          <Text className="text-[18px] font-semibold text-ink text-center mb-1">
-            ¿Cuánto tienes?
-          </Text>
-          <Text className="text-[13px] text-pebble text-center mb-6">{product.unit}</Text>
+          <Animated.View
+            className="bg-white dark:bg-[#1E1E1C]"
+            style={{
+              transform: [{ translateY: quantityPanelY }],
+              borderTopLeftRadius: 24,
+              borderTopRightRadius: 24,
+            }}
+          >
+          <View style={{ paddingBottom: 40, paddingHorizontal: 24, paddingTop: 24 }}>
+            <Text className="text-[18px] font-semibold text-ink dark:text-[#F2F0EB] text-center mb-1">
+              ¿Cuánto tienes?
+            </Text>
+            <Text className="text-[13px] text-pebble text-center mb-6">{product.unit}</Text>
 
-          {/* Control numérico */}
-          <View className="flex-row items-center justify-center gap-6 mb-8">
+            {/* Control numérico */}
+            <View className="flex-row items-center justify-center gap-6 mb-8">
+              <Pressable
+                className="w-11 h-11 bg-mint rounded-xl items-center justify-center active:opacity-60"
+                onPress={() => setQuantityDraft(String(Math.max(1, validQty - 1)))}
+              >
+                <Text className="text-[22px] text-ink dark:text-[#F2F0EB]">−</Text>
+              </Pressable>
+              <TextInput
+                value={quantityDraft}
+                onChangeText={(text) => {
+                  const clean = text.replace(/[^0-9]/g, '');
+                  setQuantityDraft(clean);
+                }}
+                onBlur={() => setQuantityDraft(String(validQty))}
+                keyboardType="number-pad"
+                selectTextOnFocus
+                className="text-[28px] font-semibold text-ink dark:text-[#F2F0EB] text-center"
+                style={{ minWidth: 48 }}
+              />
+              <Pressable
+                className="w-11 h-11 bg-mint rounded-xl items-center justify-center active:opacity-60"
+                onPress={() => setQuantityDraft(String(Math.min(99, validQty + 1)))}
+              >
+                <Text className="text-[22px] text-ink dark:text-[#F2F0EB]">+</Text>
+              </Pressable>
+            </View>
+
             <Pressable
-              className="w-11 h-11 bg-mist rounded-xl items-center justify-center active:opacity-60"
-              onPress={() => setQuantityDraft(String(Math.max(1, validQty - 1)))}
+              className="bg-sage rounded-xl py-3 items-center active:opacity-80 mb-4"
+              onPress={() => confirmQuantity(validQty)}
             >
-              <Text className="text-[22px] text-ink">−</Text>
+              <Text className="text-white font-semibold text-base">Confirmar</Text>
             </Pressable>
-            <TextInput
-              value={quantityDraft}
-              onChangeText={(text) => {
-                const clean = text.replace(/[^0-9]/g, '');
-                setQuantityDraft(clean);
-              }}
-              onBlur={() => setQuantityDraft(String(validQty))}
-              keyboardType="number-pad"
-              selectTextOnFocus
-              className="text-[28px] font-semibold text-ink text-center"
-              style={{ minWidth: 48 }}
-            />
-            <Pressable
-              className="w-11 h-11 bg-mist rounded-xl items-center justify-center active:opacity-60"
-              onPress={() => setQuantityDraft(String(Math.min(99, validQty + 1)))}
-            >
-              <Text className="text-[22px] text-ink">+</Text>
+
+            <Pressable onPress={() => confirmQuantity(null)} className="items-center active:opacity-60">
+              <Text className="text-[13px] text-pebble">Agregar sin cantidad</Text>
             </Pressable>
           </View>
-
-          <Pressable
-            className="bg-sage rounded-xl py-3 items-center active:opacity-80 mb-4"
-            onPress={() => confirmQuantity(validQty)}
-          >
-            <Text className="text-white font-semibold text-base">Confirmar</Text>
-          </Pressable>
-
-          <Pressable onPress={() => confirmQuantity(null)} className="items-center active:opacity-60">
-            <Text className="text-[13px] text-pebble">Agregar sin cantidad</Text>
-          </Pressable>
+          </Animated.View>
         </Animated.View>
       )}
     </SafeAreaView>
