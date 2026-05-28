@@ -26,7 +26,7 @@ function Layout() {
     const current = segments[0] ?? '';
     const inTabs = current === '(tabs)';
     const inPantryFlow =
-      current === 'pantry-setup' || current === 'pantry-join' || current === 'pantry-create';
+      current === 'pantry-setup' || current === 'pantry-join';
 
     if (!hasPantry && inTabs) {
       router.replace('/pantry-setup');
