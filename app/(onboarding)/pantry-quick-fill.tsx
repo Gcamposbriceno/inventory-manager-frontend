@@ -374,13 +374,13 @@ export default function PantryQuickFillScreen() {
       {/* ── Panel de cantidad ── */}
       {showQuantity && (
         <Animated.View
+          className="bg-white dark:bg-[#1E1E1C]"
           style={{
             transform: [{ translateY: quantityPanelY }],
             position: 'absolute',
             bottom: 0,
             left: 0,
             right: 0,
-            backgroundColor: 'white',
             borderTopLeftRadius: 24,
             borderTopRightRadius: 24,
             paddingBottom: 40,
