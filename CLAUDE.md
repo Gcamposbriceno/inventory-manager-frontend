@@ -20,7 +20,7 @@ npm run lint
 npx tsc --noEmit
 ```
 
-Tests run via `npm run jest` — the project currently has no test files, so `--passWithNoTests` is used in CI.
+Tests run via `npm test` (watch mode: `npm run test:watch`). Unit tests are co-located next to the files they test with a `.test.ts(x)` suffix. Folders `tests/integration/` and `tests/e2e/` are reserved in `jest.config.js` for future test types.
 
 ## Architecture
 
