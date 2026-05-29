@@ -1,62 +1,90 @@
-import { useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from "react-native";
-import { router } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { BackButton } from '@/components/BackButton';
+import { TextField } from '@/components/TextField';
+import { registerSchema, type RegisterData } from '@/lib/validation';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { router } from 'expo-router';
+import { Controller, useForm } from 'react-hook-form';
+import { KeyboardAvoidingView, Platform, Pressable, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function RegisterScreen() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterData>({ resolver: zodResolver(registerSchema) });
+
+  const onSubmit = (_data: RegisterData) => {
+    router.push('/pantry-setup');
+  };
 
   return (
-    <SafeAreaView className="flex-1 bg-cream">
+    <SafeAreaView className="flex-1 bg-cream dark:bg-[#161614]">
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
       >
         <View className="flex-1 px-6">
           <View className="pt-4 pb-2">
-            <Pressable className="active:opacity-60" onPress={() => router.back()}>
-              <Text className="text-forest text-base">← Volver</Text>
-            </Pressable>
+            <BackButton />
           </View>
 
           <View className="flex-1 justify-center">
-            <Text className="font-display text-5xl text-forest mb-2">Crear cuenta</Text>
+            <Text className="font-display text-5xl text-forest dark:text-mint mb-2">
+              Crear cuenta
+            </Text>
             <Text className="text-pebble text-base mb-10">
               Únete para gestionar tu despensa
             </Text>
 
             <View className="gap-3 mb-6">
-              <TextInput
-                className="bg-stone rounded-xl px-4 py-4 text-ink text-base"
-                placeholder="Nombre"
-                placeholderTextColor="#9E9B95"
-                value={name}
-                onChangeText={setName}
+              <Controller
+                control={control}
+                name="name"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextField
+                    placeholder="Nombre"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    error={errors.name?.message}
+                  />
+                )}
               />
-              <TextInput
-                className="bg-stone rounded-xl px-4 py-4 text-ink text-base"
-                placeholder="Correo electrónico"
-                placeholderTextColor="#9E9B95"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
+              <Controller
+                control={control}
+                name="email"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextField
+                    placeholder="Correo electrónico"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    error={errors.email?.message}
+                  />
+                )}
               />
-              <TextInput
-                className="bg-stone rounded-xl px-4 py-4 text-ink text-base"
-                placeholder="Contraseña"
-                placeholderTextColor="#9E9B95"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
+              <Controller
+                control={control}
+                name="password"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextField
+                    placeholder="Contraseña"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    secureTextEntry
+                    error={errors.password?.message}
+                  />
+                )}
               />
             </View>
 
             <Pressable
               className="bg-forest py-4 rounded-xl items-center active:opacity-80"
-              onPress={() => router.push("/pantry-setup")}
+              onPress={handleSubmit(onSubmit)}
             >
               <Text className="text-cream font-semibold text-base">Crear cuenta</Text>
             </Pressable>

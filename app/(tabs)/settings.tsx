@@ -1,7 +1,7 @@
 import { usePantry } from '@/context/PantryContext';
 import { useTheme, type ThemeMode } from '@/context/ThemeContext';
+import { useThemeColors } from '@/hooks/useThemeColors';
 import { Ionicons } from '@expo/vector-icons';
-import { useColorScheme } from 'nativewind';
 import { type ComponentProps } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -38,13 +38,9 @@ const MEMBERS = [
 ];
 
 export default function SettingsScreen() {
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { primary, muted } = useThemeColors();
   const { mode, setMode } = useTheme();
   const { leavePantry } = usePantry();
-
-  const iconMuted = '#9E9B95';
-  const iconPrimary = isDark ? '#52B788' : '#1B4332';
 
   return (
     <SafeAreaView className="flex-1 bg-cream dark:bg-[#161614]" edges={['top']}>
@@ -73,7 +69,7 @@ export default function SettingsScreen() {
                     <Ionicons
                       name={opt.icon}
                       size={18}
-                      color={selected ? iconPrimary : iconMuted}
+                      color={selected ? primary : muted}
                     />
                   </View>
                   <View className="flex-1">
@@ -83,7 +79,7 @@ export default function SettingsScreen() {
                     <Text className="text-[12px] text-pebble mt-0.5">{opt.description}</Text>
                   </View>
                   {selected ? (
-                    <Ionicons name="checkmark-circle" size={22} color={iconPrimary} />
+                    <Ionicons name="checkmark-circle" size={22} color={primary} />
                   ) : (
                     <View className="w-5 h-5 rounded-full border-2 border-stone dark:border-[#2E2E2C]" />
                   )}
@@ -107,7 +103,7 @@ export default function SettingsScreen() {
                 className={`flex-row items-center gap-3 px-4 py-3.5 ${i < arr.length - 1 ? 'border-b border-stone/60 dark:border-[#2E2E2C]' : ''}`}
               >
                 <View className="w-9 h-9 rounded-xl bg-stone dark:bg-[#2E2E2C] items-center justify-center">
-                  <Ionicons name={row.icon} size={18} color={iconMuted} />
+                  <Ionicons name={row.icon} size={18} color={muted} />
                 </View>
                 <Text className="flex-1 text-[15px] font-medium text-ink dark:text-[#F2F0EB]">
                   {row.label}

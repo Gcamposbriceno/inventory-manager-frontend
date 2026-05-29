@@ -56,8 +56,35 @@ All server data fetching uses **TanStack Query** (`@tanstack/react-query`). The 
 ### State Management
 No global client-state library — plain React `useState` / `useEffect` for local UI state. Server state is handled entirely by TanStack Query. The backend base URL is `https://inventory-manager-backend-zd9h.onrender.com/`.
 
+### Directory Structure
+
+```
+app/           ← screens and layouts only (Expo Router)
+components/    ← reusable UI components
+  Screen.tsx, ScreenHeader.tsx, ComingSoon.tsx, Card.tsx
+  BackButton.tsx, TextField.tsx, IconChip.tsx
+  recipes/     ← RecipeCard, RecipeList, RecipeDetail
+context/       ← PantryContext, ThemeContext
+hooks/
+  useThemeColors.ts   ← resolved hex palette for JS (Ionicons, etc.)
+  usePersistedState.ts ← AsyncStorage hydration pattern
+lib/
+  api/         ← apiFetch client + TanStack Query key factories
+  helpers/     ← pure functions (discountPct, greeting, quantity)
+  validation/  ← Zod schemas; types derived from schemas
+    schemas/auth.ts, schemas/pantry.ts
+constants/     ← static data arrays (quickFillProducts, mockRecipes)
+types/         ← shared TS interfaces (pantry.ts, recipe.ts)
+```
+
+**Colors**: `useThemeColors()` centralises hex values for Ionicons (which cannot use className). Always use `useThemeColors()` instead of hardcoding icon hex values — avoids the 6-file duplication pattern.
+
+**Forms**: use `react-hook-form` + `zod` for all form screens. Schemas live in `lib/validation/schemas/`. Use `<TextField />` with `Controller` — it accepts `value`, `onChangeText`, `onBlur`, and `error` props.
+
+**API layer**: `lib/api/client.ts` exports `apiFetch<T>`. `lib/api/queryKeys.ts` has key factories (`pantryKeys`, `recipeKeys`). Add endpoint files (`lib/api/pantries.ts`, etc.) when the first real fetch is needed.
+
 ### Path Aliases
-`@/*` maps to the repo root (configured in `tsconfig.json`). Use `@/app/...`, `@/assets/...`, etc. for imports.
+`@/*` maps to the repo root (configured in `tsconfig.json`). Use `@/app/...`, `@/components/...`, `@/lib/...`, etc.
 
 ### Navigation Libraries
 `@react-navigation/bottom-tabs` and related packages are installed but not yet wired up — they're available when tab navigation is needed.

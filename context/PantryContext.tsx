@@ -1,5 +1,5 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { usePersistedState } from '@/hooks/usePersistedState';
+import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react';
 
 type PantryId = string | null;
 
@@ -13,50 +13,33 @@ interface PantryCtx {
 }
 
 const Context = createContext<PantryCtx | null>(null);
-const KEY = '@pantry_membership_id';
 
 export function PantryProvider({ children }: { children: ReactNode }) {
-  const [pantryId, setPantryId] = useState<PantryId>(null);
-  const [isHydrated, setIsHydrated] = useState(false);
+  const [pantryId, persistPantryId, isHydrated] = usePersistedState<PantryId>(
+    '@pantry_membership_id',
+    null,
+  );
 
-  useEffect(() => {
-    AsyncStorage.getItem(KEY)
-      .then((stored) => {
-        setPantryId(stored || null);
-      })
-      .finally(() => {
-        setIsHydrated(true);
-      });
-  }, []);
+  const joinPantry = useCallback(
+    async (idOrCode: string) => {
+      const normalized = idOrCode.trim();
+      if (!normalized) return;
+      await persistPantryId(normalized);
+    },
+    [persistPantryId],
+  );
 
-  const joinPantry = async (idOrCode: string) => {
-    const normalized = idOrCode.trim();
-    if (!normalized) return;
-    setPantryId(normalized);
-    await AsyncStorage.setItem(KEY, normalized);
-  };
+  const createPantry = useCallback(async () => {
+    await persistPantryId(`pantry_${Date.now()}`);
+  }, [persistPantryId]);
 
-  const createPantry = async () => {
-    const newId = `pantry_${Date.now()}`;
-    setPantryId(newId);
-    await AsyncStorage.setItem(KEY, newId);
-  };
-
-  const leavePantry = async () => {
-    setPantryId(null);
-    await AsyncStorage.removeItem(KEY);
-  };
+  const leavePantry = useCallback(async () => {
+    await persistPantryId(null);
+  }, [persistPantryId]);
 
   const value = useMemo(
-    () => ({
-      pantryId,
-      hasPantry: !!pantryId,
-      isHydrated,
-      joinPantry,
-      createPantry,
-      leavePantry,
-    }),
-    [isHydrated, pantryId]
+    () => ({ pantryId, hasPantry: !!pantryId, isHydrated, joinPantry, createPantry, leavePantry }),
+    [isHydrated, pantryId, joinPantry, createPantry, leavePantry],
   );
 
   return <Context.Provider value={value}>{children}</Context.Provider>;
