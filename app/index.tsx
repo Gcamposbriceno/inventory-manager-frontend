@@ -1,14 +1,21 @@
+import { TextField } from '@/components/TextField';
+import { loginSchema, type LoginData } from '@/lib/validation';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
-import { useColorScheme } from 'nativewind';
-import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from 'react-native';
+import { Controller, useForm } from 'react-hook-form';
+import { KeyboardAvoidingView, Platform, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginData>({ resolver: zodResolver(loginSchema) });
+
+  const onSubmit = (_data: LoginData) => {
+    router.push('/pantry-setup');
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-cream dark:bg-[#161614]">
@@ -23,29 +30,41 @@ export default function LoginScreen() {
           </View>
 
           <View className="gap-3 mb-5">
-            <TextInput
-              className="bg-stone dark:bg-[#1E1E1C] border border-transparent dark:border-[#2E2E2C] rounded-xl px-4 py-4 text-ink dark:text-[#F2F0EB] text-base"
-              placeholder="Correo electrónico"
-              placeholderTextColor={isDark ? '#7F7B74' : '#9E9B95'}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
+            <Controller
+              control={control}
+              name="email"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextField
+                  placeholder="Correo electrónico"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  error={errors.email?.message}
+                />
+              )}
             />
-            <TextInput
-              className="bg-stone dark:bg-[#1E1E1C] border border-transparent dark:border-[#2E2E2C] rounded-xl px-4 py-4 text-ink dark:text-[#F2F0EB] text-base"
-              placeholder="Contraseña"
-              placeholderTextColor={isDark ? '#7F7B74' : '#9E9B95'}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
+            <Controller
+              control={control}
+              name="password"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextField
+                  placeholder="Contraseña"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  secureTextEntry
+                  error={errors.password?.message}
+                />
+              )}
             />
           </View>
 
           <View className="gap-3">
             <Pressable
               className="bg-forest py-4 rounded-xl items-center active:opacity-80"
-              onPress={() => router.push('/pantry-setup')}
+              onPress={handleSubmit(onSubmit)}
             >
               <Text className="text-cream font-semibold text-base">Iniciar sesión</Text>
             </Pressable>
@@ -54,9 +73,7 @@ export default function LoginScreen() {
               className="border border-forest dark:border-mint py-4 rounded-xl items-center active:opacity-80"
               onPress={() => router.push('/register')}
             >
-              <Text className="text-forest dark:text-mint font-semibold text-base">
-                Registrarse
-              </Text>
+              <Text className="text-forest dark:text-mint font-semibold text-base">Registrarse</Text>
             </Pressable>
 
             <Pressable

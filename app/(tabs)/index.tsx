@@ -1,8 +1,8 @@
 import { discountPct } from '@/lib/helpers/discountPct';
 import { greeting } from '@/lib/helpers/greeting';
+import { useThemeColors } from '@/hooks/useThemeColors';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useColorScheme } from 'nativewind';
 import { type ComponentProps } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -27,26 +27,17 @@ const OFFERS = [
   { id: 5, name: 'Yogur Natural',         brand: 'Colún',   qty: '1 kg',   price: 2190, originalPrice: 2790, icon: 'cafe-outline'       as IconName },
 ];
 
-// Icon colors must be hex — Ionicons doesn't accept className
-function iconColors(isDark: boolean) {
-  return {
-    muted:   '#9E9B95',
-    primary: isDark ? '#52B788' : '#1B4332',
-    warn:    isDark ? '#E9C46A' : '#92400E',
-  };
-}
-
-function StockRow({ item, isDark, isLast }: { item: typeof LOW_STOCK[0]; isDark: boolean; isLast: boolean }) {
+function StockRow({ item, isLast }: { item: typeof LOW_STOCK[0]; isLast: boolean }) {
+  const { warn } = useThemeColors();
   const ratio = Math.min(item.current / item.min, 1);
-  const ic = iconColors(isDark);
-  const barColor = ratio < 0.4 ? '#E76F51' : ic.warn;
+  const barColor = ratio < 0.4 ? '#E76F51' : warn;
 
   return (
     <View>
       <View className="flex-row items-center justify-between px-4 pt-3.5 pb-2">
         <View className="flex-row items-center gap-2.5">
           <View className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950 items-center justify-center">
-            <Ionicons name="cube-outline" size={15} color={ic.warn} />
+            <Ionicons name="cube-outline" size={15} color={warn} />
           </View>
           <View>
             <Text className="text-[15px] font-semibold text-ink dark:text-[#F2F0EB]">{item.name}</Text>
@@ -67,14 +58,14 @@ function StockRow({ item, isDark, isLast }: { item: typeof LOW_STOCK[0]; isDark:
   );
 }
 
-function OfferCard({ offer, isDark }: { offer: typeof OFFERS[0]; isDark: boolean }) {
+function OfferCard({ offer }: { offer: typeof OFFERS[0] }) {
+  const { primary } = useThemeColors();
   const pct = discountPct(offer.originalPrice, offer.price);
-  const ic = iconColors(isDark);
 
   return (
     <Pressable className="w-36 rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] p-3.5 active:opacity-75">
       <View className="w-11 h-11 rounded-xl bg-mist dark:bg-[#0D2B1A] items-center justify-center mb-1">
-        <Ionicons name={offer.icon} size={22} color={ic.primary} />
+        <Ionicons name={offer.icon} size={22} color={primary} />
       </View>
       <View className="absolute top-2.5 right-2.5 px-1.5 py-0.5 rounded-lg bg-forest">
         <Text className="text-[11px] font-bold text-cream">-{pct}%</Text>
@@ -96,9 +87,7 @@ function OfferCard({ offer, isDark }: { offer: typeof OFFERS[0]; isDark: boolean
 }
 
 export default function HomeScreen() {
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === 'dark';
-  const ic = iconColors(isDark);
+  const { primary, muted, warn } = useThemeColors();
 
   const quickActions: { icon: IconName; label: string; onPress: () => void }[] = [
     { icon: 'barcode-outline',  label: 'Escanear',      onPress: () => {} },
@@ -122,7 +111,7 @@ export default function HomeScreen() {
               </Text>
             </View>
             <Pressable className="w-10 h-10 rounded-full bg-white dark:bg-[#1E1E1C] border border-stone dark:border-[#2E2E2C] items-center justify-center active:opacity-70">
-              <Ionicons name="notifications-outline" size={20} color={ic.muted} />
+              <Ionicons name="notifications-outline" size={20} color={muted} />
             </Pressable>
           </View>
 
@@ -130,11 +119,11 @@ export default function HomeScreen() {
           <Pressable className="flex-row rounded-xl overflow-hidden bg-amber-50 dark:bg-amber-950 mb-6 active:opacity-80">
             <View className="w-1 bg-amber-500" />
             <View className="flex-1 flex-row items-center gap-2 px-3 py-3">
-              <Ionicons name="warning-outline" size={15} color={ic.warn} />
+              <Ionicons name="warning-outline" size={15} color={warn} />
               <Text className="flex-1 text-[13px] font-semibold text-amber-700 dark:text-amber-300">
                 {LOW_STOCK.length} productos bajo el mínimo de stock
               </Text>
-              <Ionicons name="chevron-forward" size={14} color={ic.warn} />
+              <Ionicons name="chevron-forward" size={14} color={warn} />
             </View>
           </Pressable>
 
@@ -168,7 +157,7 @@ export default function HomeScreen() {
                   className="flex-row items-center gap-2 py-2.5 px-4 rounded-full bg-mist dark:bg-[#0D2B1A] active:opacity-70"
                   onPress={a.onPress}
                 >
-                  <Ionicons name={a.icon} size={18} color={ic.primary} />
+                  <Ionicons name={a.icon} size={18} color={primary} />
                   <Text className="text-[14px] font-semibold text-forest dark:text-mint">{a.label}</Text>
                 </Pressable>
               ))}
@@ -186,7 +175,7 @@ export default function HomeScreen() {
           </View>
           <View className="rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] overflow-hidden mb-7">
             {LOW_STOCK.map((item, i) => (
-              <StockRow key={item.id} item={item} isDark={isDark} isLast={i === LOW_STOCK.length - 1} />
+              <StockRow key={item.id} item={item} isLast={i === LOW_STOCK.length - 1} />
             ))}
           </View>
 
@@ -205,7 +194,7 @@ export default function HomeScreen() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View className="flex-row gap-3 pb-1">
               {OFFERS.map((offer) => (
-                <OfferCard key={offer.id} offer={offer} isDark={isDark} />
+                <OfferCard key={offer.id} offer={offer} />
               ))}
             </View>
           </ScrollView>
