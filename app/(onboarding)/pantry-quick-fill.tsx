@@ -1,4 +1,5 @@
 import { QUICK_FILL_PRODUCTS } from '@/constants/quickFillProducts';
+import { parseValidQty } from '@/lib/helpers/quantity';
 import type { PantryItem } from '@/types/pantry';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -203,8 +204,7 @@ export default function PantryQuickFillScreen() {
   }
 
   function getValidQty(): number {
-    const num = parseInt(quantityDraft, 10);
-    return isNaN(num) || num < 1 ? 1 : Math.min(num, 99);
+    return parseValidQty(quantityDraft);
   }
 
   function confirmQuantity(qty: number | null) {

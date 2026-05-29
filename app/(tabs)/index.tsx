@@ -1,3 +1,5 @@
+import { discountPct } from '@/lib/helpers/discountPct';
+import { greeting } from '@/lib/helpers/greeting';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useColorScheme } from 'nativewind';
@@ -7,19 +9,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
-function greeting() {
-  const h = new Date().getHours();
-  if (h < 12) return 'Buenos días';
-  if (h < 19) return 'Buenas tardes';
-  return 'Buenas noches';
-}
-
 function formattedDate() {
   return new Date().toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' });
-}
-
-function discountPct(original: number, sale: number) {
-  return Math.round((1 - sale / original) * 100);
 }
 
 const LOW_STOCK = [
