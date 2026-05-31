@@ -31,11 +31,12 @@ export default function RegisterScreen() {
 
       console.log('SIGNUP RESULT:', result);
 
-      await setActive({
-        session: result.createdSessionId,
-      });
-
-      router.replace('/pantry-setup');
+      if (result.status === 'complete') {
+        await setActive({ session: result.createdSessionId });
+        router.replace('/pantry-setup');
+      } else {
+        alert('Se requiere verificación adicional. Revisa tu correo electrónico.');
+      }
     } catch (err: any) {
       console.log('REGISTER ERROR:', JSON.stringify(err, null, 2));
       alert(

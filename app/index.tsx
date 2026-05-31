@@ -16,10 +16,6 @@ export default function LoginScreen() {
 
   const { signIn, setActive, isLoaded } = useSignIn();
 
-  if (signIn) {
-    router.push('/(tabs)');
-  }
-
   const onSubmit = async (data: LoginData) => {
     console.log(data.email, data.password);
     if (!isLoaded) return;

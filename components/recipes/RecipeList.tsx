@@ -1,10 +1,10 @@
 import { RECIPES } from '@/constants/mockRecipes';
-import { getPublicRecipes } from '@/services/api';
-import { useAuth } from '@clerk/clerk-expo';
+import { usePublicRecipes } from '@/lib/api/recipes';
+import { useThemeColors } from '@/hooks/useThemeColors';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RecipeCard } from './RecipeCard';
 
@@ -13,35 +13,18 @@ type Props = {
 };
 
 export function RecipeList({ mode }: Props) {
-  const [recipes, setRecipes] = useState<any[]>([]);
   const [search, setSearch] = useState('');
-  const {getToken } = useAuth();
+  const colors = useThemeColors();
 
-  useEffect(() => {
-    const fetchRecipes = async () => {
-      try {
-        if (mode === 'public') {
-          const token = await getToken();
-          const data = await getPublicRecipes(token);
-          setRecipes(data);
-          console.log(data, "datos de aca")
-        } else {
-          setRecipes(RECIPES);
-        }
-      } catch (error) {
-        console.error('Error loading recipes:', error);
-      }
-    };
-
-    fetchRecipes();
-  }, [mode, getToken]);
+  const { data: publicRecipes = [], isLoading, isError } = usePublicRecipes();
+  const recipes = mode === 'public' ? publicRecipes : RECIPES;
 
   const filtered = recipes.filter((r) =>
     r.name.toLowerCase().includes(search.toLowerCase())
   );
-  const title    = mode === 'mine' ? 'Recetas'          : 'Recetas Públicas';
-  const subtitle = mode === 'mine' ? 'Ve alguna receta de tu gusto' : 'Busca alguna receta de tu interés';
-  const sectionLabel = mode === 'mine' ? 'Tus recetas' : 'Recetas disponibles';
+  const title        = mode === 'mine' ? 'Recetas'                    : 'Recetas Públicas';
+  const subtitle     = mode === 'mine' ? 'Ve alguna receta de tu gusto' : 'Busca alguna receta de tu interés';
+  const sectionLabel = mode === 'mine' ? 'Tus recetas'                : 'Recetas disponibles';
 
   return (
     <SafeAreaView className="flex-1 bg-cream dark:bg-[#161614]" edges={['top']}>
@@ -87,21 +70,28 @@ export function RecipeList({ mode }: Props) {
           <Text className="text-[11px] font-bold tracking-widest uppercase text-pebble">
             {sectionLabel}
           </Text>
-          <Text className="text-[13px] text-pebble">{filtered.length}</Text>
+          {!isLoading && <Text className="text-[13px] text-pebble">{filtered.length}</Text>}
         </View>
 
-        <View className="gap-3">
-          {filtered.length === 0 ? (
-            <View className="items-center py-10">
-              <Ionicons name="search-outline" size={28} color="#9E9B95" />
-              <Text className="text-pebble mt-2">No se encontraron recetas</Text>
-            </View>
-          ) : (
-            filtered.map((recipe) => (
+        {isLoading && mode === 'public' ? (
+          <ActivityIndicator color={colors.primary} className="mt-10" />
+        ) : isError && mode === 'public' ? (
+          <View className="items-center py-10">
+            <Ionicons name="cloud-offline-outline" size={28} color="#9E9B95" />
+            <Text className="text-pebble mt-2">No se pudieron cargar las recetas</Text>
+          </View>
+        ) : filtered.length === 0 ? (
+          <View className="items-center py-10">
+            <Ionicons name="search-outline" size={28} color="#9E9B95" />
+            <Text className="text-pebble mt-2">No se encontraron recetas</Text>
+          </View>
+        ) : (
+          <View className="gap-3">
+            {filtered.map((recipe) => (
               <RecipeCard key={recipe.id} recipe={recipe} mode={mode} />
-            ))
-          )}
-        </View>
+            ))}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

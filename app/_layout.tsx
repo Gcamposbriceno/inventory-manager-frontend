@@ -13,7 +13,16 @@ import '../global.css';
 
 SplashScreen.preventAutoHideAsync();
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const publishableKey =
   process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? '';
@@ -24,15 +33,19 @@ function Layout() {
   const { isHydrated, hasPantry } = usePantry();
   const { colorScheme } = useColorScheme();
   const { isSignedIn, isLoaded } = useAuth();
-  console.log(isSignedIn, isLoaded, "datos")
 
   useEffect(() => {
-    if (!isHydrated) return;
+    if (!isLoaded || !isHydrated) return;
 
     const current = segments[0] ?? '';
     const inTabs = current === '(tabs)';
     const inPantryFlow =
       current === 'pantry-setup' || current === 'pantry-join';
+
+    if (!isSignedIn && inTabs) {
+      router.replace('/');
+      return;
+    }
 
     if (!hasPantry && inTabs) {
       router.replace('/pantry-setup');
@@ -42,7 +55,7 @@ function Layout() {
     if (hasPantry && inPantryFlow) {
       router.replace('/(tabs)');
     }
-  }, [hasPantry, isHydrated, router, segments]);
+  }, [hasPantry, isHydrated, isLoaded, isSignedIn, router, segments]);
 
   return (
     <>
