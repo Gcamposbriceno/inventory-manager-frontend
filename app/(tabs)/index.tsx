@@ -1,17 +1,17 @@
+import { useThemeColors } from '@/hooks/useThemeColors';
 import { discountPct } from '@/lib/helpers/discountPct';
 import { greeting } from '@/lib/helpers/greeting';
-import { useThemeColors } from '@/hooks/useThemeColors';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { type ComponentProps } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
 function formattedDate() {
   return new Date().toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' });
 }
+
 
 const LOW_STOCK = [
   { id: 1, name: 'Leche',  current: 0.5, min: 1,   unit: 'L'  },

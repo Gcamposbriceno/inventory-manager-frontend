@@ -1,5 +1,6 @@
 import { PantryProvider, usePantry } from '@/context/PantryContext';
 import { ThemeProvider } from '@/context/ThemeContext';
+import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 import { DMSerifDisplay_400Regular, useFonts } from '@expo-google-fonts/dm-serif-display';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack, useRouter, useSegments } from 'expo-router';
@@ -14,11 +15,16 @@ SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
+const publishableKey =
+  process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? '';
+
 function Layout() {
   const router = useRouter();
   const segments = useSegments();
   const { isHydrated, hasPantry } = usePantry();
   const { colorScheme } = useColorScheme();
+  const { isSignedIn, isLoaded } = useAuth();
+  console.log(isSignedIn, isLoaded, "datos")
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -47,7 +53,9 @@ function Layout() {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({ DMSerifDisplay_400Regular });
+  const [fontsLoaded] = useFonts({
+    DMSerifDisplay_400Regular,
+  });
 
   useEffect(() => {
     if (fontsLoaded) SplashScreen.hideAsync();
@@ -56,14 +64,16 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
-        <PantryProvider>
-          <ThemeProvider>
-            <Layout />
-          </ThemeProvider>
-        </PantryProvider>
-      </QueryClientProvider>
-    </SafeAreaProvider>
+    <ClerkProvider publishableKey={publishableKey}>
+      <SafeAreaProvider>
+        <QueryClientProvider client={queryClient}>
+          <PantryProvider>
+            <ThemeProvider>
+              <Layout />
+            </ThemeProvider>
+          </PantryProvider>
+        </QueryClientProvider>
+      </SafeAreaProvider>
+    </ClerkProvider>
   );
 }

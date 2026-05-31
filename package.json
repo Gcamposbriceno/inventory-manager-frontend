@@ -15,6 +15,7 @@
     "test:ci": "jest --ci --coverage=false"
   },
   "dependencies": {
+    "@clerk/clerk-expo": "^2.19.31",
     "@expo-google-fonts/dm-serif-display": "^0.4.2",
     "@expo/vector-icons": "^15.0.3",
     "@hookform/resolvers": "^5.4.0",

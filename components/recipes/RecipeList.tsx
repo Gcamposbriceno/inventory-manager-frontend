@@ -1,7 +1,9 @@
 import { RECIPES } from '@/constants/mockRecipes';
+import { getPublicRecipes } from '@/services/api';
+import { useAuth } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RecipeCard } from './RecipeCard';
@@ -11,12 +13,32 @@ type Props = {
 };
 
 export function RecipeList({ mode }: Props) {
+  const [recipes, setRecipes] = useState<any[]>([]);
   const [search, setSearch] = useState('');
+  const {getToken } = useAuth();
 
-  const filtered = RECIPES.filter((r) =>
-    r.name.toLowerCase().includes(search.toLowerCase()),
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      try {
+        if (mode === 'public') {
+          const token = await getToken();
+          const data = await getPublicRecipes(token);
+          setRecipes(data);
+          console.log(data, "datos de aca")
+        } else {
+          setRecipes(RECIPES);
+        }
+      } catch (error) {
+        console.error('Error loading recipes:', error);
+      }
+    };
+
+    fetchRecipes();
+  }, [mode, getToken]);
+
+  const filtered = recipes.filter((r) =>
+    r.name.toLowerCase().includes(search.toLowerCase())
   );
-
   const title    = mode === 'mine' ? 'Recetas'          : 'Recetas Públicas';
   const subtitle = mode === 'mine' ? 'Ve alguna receta de tu gusto' : 'Busca alguna receta de tu interés';
   const sectionLabel = mode === 'mine' ? 'Tus recetas' : 'Recetas disponibles';
