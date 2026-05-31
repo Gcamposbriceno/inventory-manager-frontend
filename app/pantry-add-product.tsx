@@ -17,7 +17,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function PantryAddProductScreen() {
-  const { pantryId, typeName } = useLocalSearchParams<{ pantryId: string; typeName: string }>();
+  const { pantryId, typeName, pantryName } = useLocalSearchParams<{ pantryId: string; typeName: string; pantryName: string }>();
   const { muted } = useThemeColors();
   const [search, setSearch] = useState('');
 
@@ -45,6 +45,9 @@ export default function PantryAddProductScreen() {
         <Text className="font-display text-[26px] text-ink dark:text-[#F2F0EB] mt-3 mb-0.5">
           {typeName}
         </Text>
+        {pantryName ? (
+          <Text className="text-[13px] font-medium text-forest dark:text-mint mb-1">{pantryName}</Text>
+        ) : null}
         <Text className="text-[13px] text-pebble mb-4">
           Agrega productos de este tipo a tu despensa
         </Text>

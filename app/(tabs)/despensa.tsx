@@ -51,10 +51,12 @@ function StatusBadge({ status }: { status: Status }) {
 // Expanded product list — fetches lazily only when rendered
 function PantryTypeProducts({
   pantryId,
+  pantryName,
   typeName,
   pantryProducts,
 }: {
   pantryId: string;
+  pantryName: string;
   typeName: string;
   pantryProducts: PantryProduct[];
 }) {
@@ -123,7 +125,7 @@ function PantryTypeProducts({
         className="flex-row items-center gap-1.5 mt-2 self-start active:opacity-70"
         onPress={() =>
           router.push(
-            `/pantry-add-product?pantryId=${pantryId}&typeName=${encodeURIComponent(typeName)}`,
+            `/pantry-add-product?pantryId=${pantryId}&pantryName=${encodeURIComponent(pantryName)}&typeName=${encodeURIComponent(typeName)}`,
           )
         }
       >
@@ -142,6 +144,7 @@ function PantryTypeRow({
   isExpanded,
   onToggle,
   pantryId,
+  pantryName,
   pantryProducts,
 }: {
   row: PantryTypeOverview;
@@ -149,6 +152,7 @@ function PantryTypeRow({
   isExpanded: boolean;
   onToggle: () => void;
   pantryId: string;
+  pantryName: string;
   pantryProducts: PantryProduct[];
 }) {
   const { warn, expired, primary, muted } = useThemeColors();
@@ -209,6 +213,7 @@ function PantryTypeRow({
       {isExpanded && (
         <PantryTypeProducts
           pantryId={pantryId}
+          pantryName={pantryName}
           typeName={row.type_name}
           pantryProducts={pantryProducts}
         />
@@ -233,6 +238,8 @@ export default function DespensaScreen() {
   const { data: pantries, isLoading: pantriesLoading } = usePantries();
   const { data: overview, isLoading: overviewLoading } = usePantryOverview(selectedPantryId ?? '');
   const { data: pantryProducts } = usePantryProducts(selectedPantryId ?? '');
+
+  const selectedPantryName = (pantries ?? []).find((p) => p.id === selectedPantryId)?.name ?? '';
 
   const types = overview ?? [];
   const emptyCount    = types.filter((r) => getStatus(r) === 'empty').length;
@@ -260,9 +267,23 @@ export default function DespensaScreen() {
         contentContainerClassName="pb-28"
       >
         {/* Header */}
-        <View className="px-5 pt-2 pb-4">
-          <Text className="font-display text-[28px] text-ink dark:text-[#F2F0EB]">Despensa</Text>
-          <Text className="text-[13px] text-pebble mt-0.5">Gestiona tu inventario</Text>
+        <View className="px-5 pt-2 pb-4 flex-row items-center justify-between">
+          <View>
+            <Text className="font-display text-[28px] text-ink dark:text-[#F2F0EB]">Despensa</Text>
+            <Text className="text-[13px] text-pebble mt-0.5">Gestiona tu inventario</Text>
+          </View>
+          {selectedPantryId && (
+            <Pressable
+              className="w-10 h-10 rounded-full bg-white dark:bg-[#1E1E1C] border border-stone dark:border-[#2E2E2C] items-center justify-center active:opacity-70"
+              onPress={() =>
+                router.push(
+                  `/pantry-share?pantryId=${selectedPantryId}&pantryName=${encodeURIComponent(selectedPantryName)}`,
+                )
+              }
+            >
+              <Ionicons name="share-social-outline" size={18} color="#9E9B95" />
+            </Pressable>
+          )}
         </View>
 
         {/* Pantry selector */}
@@ -418,6 +439,7 @@ export default function DespensaScreen() {
                     isExpanded={expandedTypeId === row.type_id}
                     onToggle={() => toggleType(row.type_id)}
                     pantryId={selectedPantryId!}
+                    pantryName={selectedPantryName}
                     pantryProducts={pantryProducts ?? []}
                   />
                 ))}
@@ -438,7 +460,7 @@ export default function DespensaScreen() {
             shadowRadius: 8,
             shadowOffset: { width: 0, height: 3 },
           }}
-          onPress={() => router.push(`/pantry-add-type?pantryId=${selectedPantryId}`)}
+          onPress={() => router.push(`/pantry-add-type?pantryId=${selectedPantryId}&pantryName=${encodeURIComponent(selectedPantryName)}`)}
         >
           <Ionicons name="add" size={28} color="#F2F0EB" />
         </Pressable>

@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { renderHook, waitFor } from '@testing-library/react-native';
+import { act, renderHook, waitFor } from '@testing-library/react-native';
 import React from 'react';
 import { PantryProvider, usePantry } from './PantryContext';
 
@@ -35,7 +35,7 @@ describe('PantryContext', () => {
   it('setActivePantry persists id and id_code', async () => {
     const { result } = renderHook(() => usePantry(), { wrapper });
     await waitFor(() => expect(result.current.isHydrated).toBe(true));
-    await result.current.setActivePantry('pantry-uuid-123', 'ABC12X');
+    await act(async () => { await result.current.setActivePantry('pantry-uuid-123', 'ABC12X'); });
     await waitFor(() => expect(result.current.pantryId).toBe('pantry-uuid-123'));
     expect(result.current.pantryIdCode).toBe('ABC12X');
     expect(result.current.hasPantry).toBe(true);
@@ -48,7 +48,7 @@ describe('PantryContext', () => {
     await AsyncStorage.setItem('@pantry_id_code', 'XYZ99');
     const { result } = renderHook(() => usePantry(), { wrapper });
     await waitFor(() => expect(result.current.pantryId).toBe('existing'));
-    await result.current.clearPantry();
+    await act(async () => { await result.current.clearPantry(); });
     await waitFor(() => expect(result.current.pantryId).toBeNull());
     expect(result.current.pantryIdCode).toBeNull();
     expect(result.current.hasPantry).toBe(false);

@@ -108,7 +108,7 @@ function ProductsPanel({ pantryId, typeName }: { pantryId: string; typeName: str
 // --- Screen ---
 
 export default function PantryAddTypeScreen() {
-  const { pantryId } = useLocalSearchParams<{ pantryId: string }>();
+  const { pantryId, pantryName } = useLocalSearchParams<{ pantryId: string; pantryName: string }>();
   const { muted } = useThemeColors();
 
   const [step, setStep] = useState<'search' | 'configure'>('search');
@@ -163,9 +163,12 @@ export default function PantryAddTypeScreen() {
       <SafeAreaView className="flex-1 bg-cream dark:bg-[#161614]" edges={['top']}>
         <View className="px-5 pt-4 pb-3">
           <BackButton />
-          <Text className="font-display text-[26px] text-ink dark:text-[#F2F0EB] mt-3 mb-1">
+          <Text className="font-display text-[26px] text-ink dark:text-[#F2F0EB] mt-3 mb-0.5">
             Agregar tipo
           </Text>
+          {pantryName ? (
+            <Text className="text-[13px] font-medium text-forest dark:text-mint mb-1">{pantryName}</Text>
+          ) : null}
           <Text className="text-[13px] text-pebble mb-4">
             ¿Qué tipo de producto quieres seguir en esta despensa?
           </Text>
@@ -262,7 +265,9 @@ export default function PantryAddTypeScreen() {
               <Text className="text-[15px] font-semibold text-ink dark:text-[#F2F0EB]">
                 {selectedType?.name}
               </Text>
-              <Text className="text-[12px] text-pebble">{unit}</Text>
+              <Text className="text-[12px] text-pebble">
+                {unit}{pantryName ? ` · ${pantryName}` : ''}
+              </Text>
             </View>
           </View>
 
