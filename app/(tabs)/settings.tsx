@@ -40,7 +40,7 @@ const MEMBERS = [
 export default function SettingsScreen() {
   const { primary, muted } = useThemeColors();
   const { mode, setMode } = useTheme();
-  const { leavePantry } = usePantry();
+  const { clearPantry } = usePantry();
 
   return (
     <SafeAreaView className="flex-1 bg-cream dark:bg-[#161614]" edges={['top']}>
@@ -135,7 +135,7 @@ export default function SettingsScreen() {
 
           <Pressable
             className="mt-6 rounded-2xl border border-expired/40 bg-expired/10 py-3.5 items-center active:opacity-70"
-            onPress={leavePantry}
+            onPress={clearPantry}
           >
             <Text className="text-[15px] font-semibold text-expired">Salir de la despensa</Text>
           </Pressable>

@@ -1,6 +1,8 @@
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { discountPct } from '@/lib/helpers/discountPct';
 import { greeting } from '@/lib/helpers/greeting';
+import { StockRow } from '@/components/StockRow';
+import type { StockRowItem } from '@/components/StockRow';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { type ComponentProps } from 'react';
@@ -13,7 +15,7 @@ function formattedDate() {
 }
 
 
-const LOW_STOCK = [
+const LOW_STOCK: StockRowItem[] = [
   { id: 1, name: 'Leche',  current: 0.5, min: 1,   unit: 'L'  },
   { id: 2, name: 'Arroz',  current: 0.2, min: 0.5, unit: 'kg' },
   { id: 3, name: 'Aceite', current: 100, min: 250,  unit: 'ml' },
@@ -27,36 +29,6 @@ const OFFERS = [
   { id: 5, name: 'Yogur Natural',         brand: 'Colún',   qty: '1 kg',   price: 2190, originalPrice: 2790, icon: 'cafe-outline'       as IconName },
 ];
 
-function StockRow({ item, isLast }: { item: typeof LOW_STOCK[0]; isLast: boolean }) {
-  const { warn } = useThemeColors();
-  const ratio = Math.min(item.current / item.min, 1);
-  const barColor = ratio < 0.4 ? '#E76F51' : warn;
-
-  return (
-    <View>
-      <View className="flex-row items-center justify-between px-4 pt-3.5 pb-2">
-        <View className="flex-row items-center gap-2.5">
-          <View className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950 items-center justify-center">
-            <Ionicons name="cube-outline" size={15} color={warn} />
-          </View>
-          <View>
-            <Text className="text-[15px] font-semibold text-ink dark:text-[#F2F0EB]">{item.name}</Text>
-            <Text className="text-[12px] text-pebble mt-0.5">
-              {item.current} / {item.min} {item.unit}
-            </Text>
-          </View>
-        </View>
-        <View className="px-2 py-1 rounded-md bg-amber-50 dark:bg-amber-950">
-          <Text className="text-[11px] font-bold text-amber-700 dark:text-amber-400">Bajo mín.</Text>
-        </View>
-      </View>
-      <View className="mx-4 mb-3.5 h-1.5 rounded-full bg-stone dark:bg-[#2E2E2C]">
-        <View className="h-1.5 rounded-full" style={{ width: `${ratio * 100}%`, backgroundColor: barColor }} />
-      </View>
-      {!isLast && <View className="h-px mx-4 bg-stone dark:bg-[#2E2E2C]" />}
-    </View>
-  );
-}
 
 function OfferCard({ offer }: { offer: typeof OFFERS[0] }) {
   const { primary } = useThemeColors();

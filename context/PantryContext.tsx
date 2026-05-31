@@ -5,11 +5,11 @@ type PantryId = string | null;
 
 interface PantryCtx {
   pantryId: PantryId;
+  pantryIdCode: string | null;
   hasPantry: boolean;
   isHydrated: boolean;
-  joinPantry: (idOrCode: string) => Promise<void>;
-  createPantry: () => Promise<void>;
-  leavePantry: () => Promise<void>;
+  setActivePantry: (id: string, id_code: string) => Promise<void>;
+  clearPantry: () => Promise<void>;
 }
 
 const Context = createContext<PantryCtx | null>(null);
@@ -19,27 +19,27 @@ export function PantryProvider({ children }: { children: ReactNode }) {
     '@pantry_membership_id',
     null,
   );
-
-  const joinPantry = useCallback(
-    async (idOrCode: string) => {
-      const normalized = idOrCode.trim();
-      if (!normalized) return;
-      await persistPantryId(normalized);
-    },
-    [persistPantryId],
+  const [pantryIdCode, persistPantryIdCode] = usePersistedState<string | null>(
+    '@pantry_id_code',
+    null,
   );
 
-  const createPantry = useCallback(async () => {
-    await persistPantryId(`pantry_${Date.now()}`);
-  }, [persistPantryId]);
+  const setActivePantry = useCallback(
+    async (id: string, id_code: string) => {
+      await persistPantryId(id);
+      await persistPantryIdCode(id_code);
+    },
+    [persistPantryId, persistPantryIdCode],
+  );
 
-  const leavePantry = useCallback(async () => {
+  const clearPantry = useCallback(async () => {
     await persistPantryId(null);
-  }, [persistPantryId]);
+    await persistPantryIdCode(null);
+  }, [persistPantryId, persistPantryIdCode]);
 
   const value = useMemo(
-    () => ({ pantryId, hasPantry: !!pantryId, isHydrated, joinPantry, createPantry, leavePantry }),
-    [isHydrated, pantryId, joinPantry, createPantry, leavePantry],
+    () => ({ pantryId, pantryIdCode, hasPantry: !!pantryId, isHydrated, setActivePantry, clearPantry }),
+    [isHydrated, pantryId, pantryIdCode, setActivePantry, clearPantry],
   );
 
   return <Context.Provider value={value}>{children}</Context.Provider>;
