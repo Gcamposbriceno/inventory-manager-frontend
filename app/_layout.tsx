@@ -37,12 +37,12 @@ function Layout() {
   useEffect(() => {
     if (!isLoaded || !isHydrated) return;
 
-    const current = segments[0] ?? '';
+    const current = segments[0];
     const inTabs = current === '(tabs)';
     const inPantryFlow =
       current === 'pantry-setup' || current === 'pantry-join';
 
-    if (isSignedIn && current === '') {
+    if (isSignedIn && current === undefined) {
       router.replace(hasPantry ? '/(tabs)' : '/pantry-setup');
       return;
     }
