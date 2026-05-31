@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { usePantry } from '@/context/PantryContext';
-import { usePantries, usePantryOverview, usePantryProducts, useRemovePantryProduct } from '@/lib/api/pantries';
+import { usePantries, usePantryOverview, usePantryProducts, useRemovePantryProduct, useRemovePantryProductType, useUpdatePantryStock } from '@/lib/api/pantries';
 import { useProductTypeProducts } from '@/lib/api/productTypes';
 import type { PantryProduct, PantryTypeOverview } from '@/types/pantry';
 
@@ -52,21 +52,27 @@ function StatusBadge({ status }: { status: Status }) {
 function PantryTypeProducts({
   pantryId,
   pantryName,
+  typeId,
   typeName,
   pantryProducts,
 }: {
   pantryId: string;
   pantryName: string;
+  typeId: string;
   typeName: string;
   pantryProducts: PantryProduct[];
 }) {
   const { primary } = useThemeColors();
   const { data: typeProducts, isLoading } = useProductTypeProducts(typeName);
 
-  const removeProduct = useRemovePantryProduct();
-  const pantrySkuSet  = new Set(pantryProducts.map((p) => p.product_sku));
-  const stockBySku    = Object.fromEntries(pantryProducts.map((p) => [p.product_sku, p.stock]));
-  const inPantry      = (typeProducts ?? []).filter((p) => pantrySkuSet.has(p.sku));
+  const removeProduct    = useRemovePantryProduct();
+  const updateStock      = useUpdatePantryStock();
+  const removeType       = useRemovePantryProductType();
+  const [confirmRemove, setConfirmRemove] = useState(false);
+
+  const pantrySkuSet = new Set(pantryProducts.map((p) => p.product_sku));
+  const stockBySku   = Object.fromEntries(pantryProducts.map((p) => [p.product_sku, p.stock]));
+  const inPantry     = (typeProducts ?? []).filter((p) => pantrySkuSet.has(p.sku));
 
   return (
     <View className="border-t border-stone dark:border-[#2E2E2C] px-4 pt-3 pb-3.5 bg-stone/20 dark:bg-[#1A1A18]">
@@ -77,63 +83,120 @@ function PantryTypeProducts({
       )}
 
       {inPantry.map((p) => {
+        const stock      = stockBySku[p.sku] ?? 0;
+        const isUpdating = updateStock.isPending && updateStock.variables?.sku === p.sku;
         const isRemoving = removeProduct.isPending && removeProduct.variables?.sku === p.sku;
+
         return (
-          <View key={p.sku} className="flex-row items-center justify-between py-2">
-            <View className="w-9 h-9 rounded-lg bg-stone dark:bg-[#2E2E2C] overflow-hidden mr-2.5 items-center justify-center flex-shrink-0">
+          <View key={p.sku} className="flex-row items-center py-2 gap-2">
+            {/* Thumbnail */}
+            <View className="w-9 h-9 rounded-lg bg-stone dark:bg-[#2E2E2C] overflow-hidden items-center justify-center flex-shrink-0">
               {p.image_url ? (
-                <Image
-                  source={{ uri: p.image_url }}
-                  style={{ width: 36, height: 36 }}
-                  resizeMode="contain"
-                />
+                <Image source={{ uri: p.image_url }} style={{ width: 36, height: 36 }} resizeMode="contain" />
               ) : (
                 <Ionicons name="cube-outline" size={16} color="#9E9B95" />
               )}
             </View>
-            <View className="flex-1 pr-3">
-              <Text className="text-[14px] font-medium text-ink dark:text-[#F2F0EB]" numberOfLines={1}>
+
+            {/* Name + brand */}
+            <View className="flex-1">
+              <Text className="text-[13px] font-medium text-ink dark:text-[#F2F0EB]" numberOfLines={1}>
                 {p.name}
               </Text>
-              <Text className="text-[11px] text-pebble mt-0.5">
-                {p.brand} · {p.unit_amount}
-              </Text>
+              <Text className="text-[11px] text-pebble">{p.brand}</Text>
             </View>
-            <View className="flex-row items-center gap-2">
-              <View className="bg-mist dark:bg-[#0D2B1A] px-2.5 py-1 rounded-lg">
-                <Text className="text-[12px] font-bold text-forest dark:text-mint">
-                  ×{stockBySku[p.sku] ?? 0}
-                </Text>
-              </View>
+
+            {/* Stock stepper */}
+            <View className="flex-row items-center gap-1">
               <Pressable
-                className="w-8 h-8 rounded-full bg-red-50 dark:bg-red-950 items-center justify-center active:opacity-70"
-                disabled={isRemoving}
-                onPress={() => removeProduct.mutate({ pantryId, sku: p.sku })}
+                className="w-7 h-7 rounded-lg bg-stone dark:bg-[#2E2E2C] items-center justify-center active:opacity-60"
+                disabled={isUpdating || stock === 0}
+                onPress={() => updateStock.mutate({ pantryId, sku: p.sku, stock: stock - 1 })}
               >
-                {isRemoving ? (
-                  <ActivityIndicator size="small" color="#E76F51" />
+                <Text className="text-[16px] font-light text-ink dark:text-[#F2F0EB] leading-none">−</Text>
+              </Pressable>
+
+              <View className="w-8 items-center">
+                {isUpdating ? (
+                  <ActivityIndicator size="small" />
                 ) : (
-                  <Ionicons name="trash-outline" size={15} color="#E76F51" />
+                  <Text className="text-[13px] font-bold text-ink dark:text-[#F2F0EB]">{stock}</Text>
                 )}
+              </View>
+
+              <Pressable
+                className="w-7 h-7 rounded-lg bg-stone dark:bg-[#2E2E2C] items-center justify-center active:opacity-60"
+                disabled={isUpdating}
+                onPress={() => updateStock.mutate({ pantryId, sku: p.sku, stock: stock + 1 })}
+              >
+                <Text className="text-[16px] font-light text-ink dark:text-[#F2F0EB] leading-none">+</Text>
               </Pressable>
             </View>
+
+            {/* Remove product */}
+            <Pressable
+              className="w-7 h-7 rounded-full bg-red-50 dark:bg-red-950 items-center justify-center active:opacity-70"
+              disabled={isRemoving}
+              onPress={() => removeProduct.mutate({ pantryId, sku: p.sku })}
+            >
+              {isRemoving ? (
+                <ActivityIndicator size="small" color="#E76F51" />
+              ) : (
+                <Ionicons name="trash-outline" size={13} color="#E76F51" />
+              )}
+            </Pressable>
           </View>
         );
       })}
 
-      <Pressable
-        className="flex-row items-center gap-1.5 mt-2 self-start active:opacity-70"
-        onPress={() =>
-          router.push(
-            `/pantry-add-product?pantryId=${pantryId}&pantryName=${encodeURIComponent(pantryName)}&typeName=${encodeURIComponent(typeName)}`,
-          )
-        }
-      >
-        <Ionicons name="add-circle-outline" size={16} color={primary} />
-        <Text className="text-[13px] font-semibold text-forest dark:text-mint">
-          Agregar producto
-        </Text>
-      </Pressable>
+      {/* Bottom actions */}
+      <View className="flex-row items-center justify-between mt-3 pt-2.5 border-t border-stone/50 dark:border-[#2E2E2C]">
+        <Pressable
+          className="flex-row items-center gap-1.5 active:opacity-70"
+          onPress={() =>
+            router.push(
+              `/pantry-add-product?pantryId=${pantryId}&pantryName=${encodeURIComponent(pantryName)}&typeName=${encodeURIComponent(typeName)}`,
+            )
+          }
+        >
+          <Ionicons name="add-circle-outline" size={15} color={primary} />
+          <Text className="text-[13px] font-semibold text-forest dark:text-mint">Agregar producto</Text>
+        </Pressable>
+
+        {confirmRemove ? (
+          <View className="flex-row items-center gap-2">
+            <Text className="text-[12px] text-pebble">¿Eliminar tipo?</Text>
+            <Pressable
+              className="px-2.5 py-1 rounded-lg bg-stone dark:bg-[#2E2E2C] active:opacity-70"
+              onPress={() => setConfirmRemove(false)}
+            >
+              <Text className="text-[12px] font-medium text-pebble">No</Text>
+            </Pressable>
+            <Pressable
+              className="px-2.5 py-1 rounded-lg bg-red-50 dark:bg-red-950 active:opacity-70"
+              disabled={removeType.isPending}
+              onPress={() => {
+                setConfirmRemove(false);
+                removeType.mutate({ pantryId, typeId });
+              }}
+            >
+              {removeType.isPending ? (
+                <ActivityIndicator size="small" color="#E76F51" />
+              ) : (
+                <Text className="text-[12px] font-semibold text-expired">Sí, eliminar</Text>
+              )}
+            </Pressable>
+          </View>
+        ) : (
+          <Pressable
+            className="flex-row items-center gap-1 active:opacity-70"
+            onPress={() => setConfirmRemove(true)}
+          >
+            <Ionicons name="trash-outline" size={13} color="#E76F51" />
+            <Text className="text-[13px] font-medium text-expired">Eliminar tipo</Text>
+          </Pressable>
+        )}
+      </View>
     </View>
   );
 }
@@ -214,6 +277,7 @@ function PantryTypeRow({
         <PantryTypeProducts
           pantryId={pantryId}
           pantryName={pantryName}
+          typeId={row.type_id}
           typeName={row.type_name}
           pantryProducts={pantryProducts}
         />
