@@ -1,6 +1,7 @@
 import { BackButton } from '@/components/BackButton';
 import { TextField } from '@/components/TextField';
 import { usePantry } from '@/context/PantryContext';
+import { useJoinPantry } from '@/lib/api/pantries';
 import { pantryJoinSchema, type PantryJoinData } from '@/lib/validation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
@@ -9,7 +10,9 @@ import { KeyboardAvoidingView, Platform, Pressable, Text, View } from 'react-nat
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function PantryJoinScreen() {
-  const { joinPantry } = usePantry();
+  const { setActivePantry } = usePantry();
+  const joinPantry = useJoinPantry();
+
   const {
     control,
     handleSubmit,
@@ -17,8 +20,12 @@ export default function PantryJoinScreen() {
   } = useForm<PantryJoinData>({ resolver: zodResolver(pantryJoinSchema) });
 
   const onSubmit = async ({ code }: PantryJoinData) => {
-    await joinPantry(code);
-    router.replace('/(tabs)');
+    joinPantry.mutate(code, {
+      onSuccess: async (pantry) => {
+        await setActivePantry(pantry.id, pantry.id_code);
+        router.replace('/(tabs)');
+      },
+    });
   };
 
   return (
@@ -56,11 +63,20 @@ export default function PantryJoinScreen() {
               />
             </View>
 
+            {joinPantry.error && (
+              <Text className="text-red-500 text-sm mb-4 text-center">
+                {joinPantry.error.message ?? 'Código inválido o despensa no encontrada.'}
+              </Text>
+            )}
+
             <Pressable
               className="bg-forest py-4 rounded-xl items-center active:opacity-80"
               onPress={handleSubmit(onSubmit)}
+              disabled={joinPantry.isPending}
             >
-              <Text className="text-cream font-semibold text-base">Unirse</Text>
+              <Text className="text-cream font-semibold text-base">
+                {joinPantry.isPending ? 'Uniéndose…' : 'Unirse'}
+              </Text>
             </Pressable>
           </View>
         </View>

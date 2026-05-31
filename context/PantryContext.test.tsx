@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { renderHook, waitFor } from '@testing-library/react-native';
+import { act, renderHook, waitFor } from '@testing-library/react-native';
 import React from 'react';
 import { PantryProvider, usePantry } from './PantryContext';
 
@@ -16,6 +16,7 @@ describe('PantryContext', () => {
     const { result } = renderHook(() => usePantry(), { wrapper });
     await waitFor(() => expect(result.current.isHydrated).toBe(true));
     expect(result.current.pantryId).toBeNull();
+    expect(result.current.pantryIdCode).toBeNull();
     expect(result.current.hasPantry).toBe(false);
   });
 
@@ -31,46 +32,28 @@ describe('PantryContext', () => {
     expect(result.current.hasPantry).toBe(true);
   });
 
-  it('joinPantry trims whitespace and persists the id', async () => {
+  it('setActivePantry persists id and id_code', async () => {
     const { result } = renderHook(() => usePantry(), { wrapper });
     await waitFor(() => expect(result.current.isHydrated).toBe(true));
-    await result.current.joinPantry('  CODE  ');
-    await waitFor(() => expect(result.current.pantryId).toBe('CODE'));
+    await act(async () => { await result.current.setActivePantry('pantry-uuid-123', 'ABC12X'); });
+    await waitFor(() => expect(result.current.pantryId).toBe('pantry-uuid-123'));
+    expect(result.current.pantryIdCode).toBe('ABC12X');
     expect(result.current.hasPantry).toBe(true);
-    expect(await AsyncStorage.getItem('@pantry_membership_id')).toBe('CODE');
+    expect(await AsyncStorage.getItem('@pantry_membership_id')).toBe('pantry-uuid-123');
+    expect(await AsyncStorage.getItem('@pantry_id_code')).toBe('ABC12X');
   });
 
-  it('joinPantry with empty string does nothing', async () => {
-    const { result } = renderHook(() => usePantry(), { wrapper });
-    await waitFor(() => expect(result.current.isHydrated).toBe(true));
-    await result.current.joinPantry('');
-    expect(result.current.pantryId).toBeNull();
-  });
-
-  it('joinPantry with whitespace-only string does nothing', async () => {
-    const { result } = renderHook(() => usePantry(), { wrapper });
-    await waitFor(() => expect(result.current.isHydrated).toBe(true));
-    await result.current.joinPantry('   ');
-    expect(result.current.pantryId).toBeNull();
-  });
-
-  it('createPantry sets a pantry_<timestamp> id and persists it', async () => {
-    const { result } = renderHook(() => usePantry(), { wrapper });
-    await waitFor(() => expect(result.current.isHydrated).toBe(true));
-    await result.current.createPantry();
-    await waitFor(() => expect(result.current.pantryId).toMatch(/^pantry_\d+$/));
-    expect(result.current.hasPantry).toBe(true);
-    expect(await AsyncStorage.getItem('@pantry_membership_id')).toMatch(/^pantry_\d+$/);
-  });
-
-  it('leavePantry clears the id and removes it from storage', async () => {
+  it('clearPantry removes id and id_code from state and storage', async () => {
     await AsyncStorage.setItem('@pantry_membership_id', 'existing');
+    await AsyncStorage.setItem('@pantry_id_code', 'XYZ99');
     const { result } = renderHook(() => usePantry(), { wrapper });
     await waitFor(() => expect(result.current.pantryId).toBe('existing'));
-    await result.current.leavePantry();
+    await act(async () => { await result.current.clearPantry(); });
     await waitFor(() => expect(result.current.pantryId).toBeNull());
+    expect(result.current.pantryIdCode).toBeNull();
     expect(result.current.hasPantry).toBe(false);
     expect(await AsyncStorage.getItem('@pantry_membership_id')).toBeNull();
+    expect(await AsyncStorage.getItem('@pantry_id_code')).toBeNull();
   });
 
   it('usePantry throws when used outside PantryProvider', () => {

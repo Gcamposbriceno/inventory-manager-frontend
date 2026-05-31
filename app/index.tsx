@@ -1,5 +1,6 @@
 import { TextField } from '@/components/TextField';
 import { loginSchema, type LoginData } from '@/lib/validation';
+import { useSignIn } from '@clerk/clerk-expo';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
@@ -13,9 +14,33 @@ export default function LoginScreen() {
     formState: { errors },
   } = useForm<LoginData>({ resolver: zodResolver(loginSchema) });
 
-  const onSubmit = (_data: LoginData) => {
-    router.push('/pantry-setup');
-  };
+  const { signIn, setActive, isLoaded } = useSignIn();
+
+  const onSubmit = async (data: LoginData) => {
+    // console.log(data.email, data.password);
+    if (!isLoaded) return;
+
+    try {
+      const result = await signIn.create({
+        identifier: data.email,
+        password: data.password,
+      });
+
+      if (result.status === 'complete') {
+        await setActive({
+          session: result.createdSessionId,
+        });
+
+        router.push('/pantry-setup');
+      } else {
+        console.log('Clerk sign-in status inesperado:', result.status);
+        alert(`Autenticación incompleta (estado: ${result.status}). Intenta de nuevo.`);
+      }
+    } catch (err: any) {
+    console.log('Clerk error', JSON.stringify(err, null, 2));
+    alert('Error al iniciar sesión');
+    }
+};
 
   return (
     <SafeAreaView className="flex-1 bg-cream dark:bg-[#161614]">
