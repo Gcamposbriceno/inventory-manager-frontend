@@ -234,6 +234,7 @@ export function useRemovePantryProductType() {
       apiFetch(`/pantries/${pantryId}/product-types/${typeId}`, { method: 'DELETE' }),
     onSuccess: (_result, { pantryId }) => {
       queryClient.invalidateQueries({ queryKey: pantryKeys.productTypes(pantryId) });
+      queryClient.invalidateQueries({ queryKey: pantryKeys.overview(pantryId) });
     },
   });
 }
