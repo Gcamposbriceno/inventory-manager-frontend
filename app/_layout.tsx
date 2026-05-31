@@ -42,6 +42,11 @@ function Layout() {
     const inPantryFlow =
       current === 'pantry-setup' || current === 'pantry-join';
 
+    if (isSignedIn && current === '') {
+      router.replace(hasPantry ? '/(tabs)' : '/pantry-setup');
+      return;
+    }
+
     if (!isSignedIn && inTabs) {
       router.replace('/');
       return;

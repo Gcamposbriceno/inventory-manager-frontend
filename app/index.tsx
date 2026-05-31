@@ -17,7 +17,7 @@ export default function LoginScreen() {
   const { signIn, setActive, isLoaded } = useSignIn();
 
   const onSubmit = async (data: LoginData) => {
-    console.log(data.email, data.password);
+    // console.log(data.email, data.password);
     if (!isLoaded) return;
 
     try {
@@ -32,6 +32,9 @@ export default function LoginScreen() {
         });
 
         router.push('/pantry-setup');
+      } else {
+        console.log('Clerk sign-in status inesperado:', result.status);
+        alert(`Autenticación incompleta (estado: ${result.status}). Intenta de nuevo.`);
       }
     } catch (err: any) {
     console.log('Clerk error', JSON.stringify(err, null, 2));

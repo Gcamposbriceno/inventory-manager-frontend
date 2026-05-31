@@ -1,4 +1,4 @@
-const BASE_URL = 'https://inventory-manager-backend-zd9h.onrender.com';
+const BASE_URL = 'http://127.0.0.1:8000';
 
 export async function apiFetch<T>(path: string, token?: string | null, init?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {

@@ -21,7 +21,7 @@ export default function RegisterScreen() {
     if (!isLoaded) return;
 
     try {
-      console.log('REGISTER DATA:', data);
+      // console.log('REGISTER DATA:', data);
 
       const result = await signUp.create({
         emailAddress: data.email.trim().toLowerCase(),
@@ -29,7 +29,7 @@ export default function RegisterScreen() {
         username: data.name
       });
 
-      console.log('SIGNUP RESULT:', result);
+      // console.log('SIGNUP RESULT:', result);
 
       if (result.status === 'complete') {
         await setActive({ session: result.createdSessionId });
@@ -38,7 +38,7 @@ export default function RegisterScreen() {
         alert('Se requiere verificación adicional. Revisa tu correo electrónico.');
       }
     } catch (err: any) {
-      console.log('REGISTER ERROR:', JSON.stringify(err, null, 2));
+      // console.log('REGISTER ERROR:', JSON.stringify(err, null, 2));
       alert(
         err?.errors?.[0]?.message ?? 'Error al crear cuenta'
       );
