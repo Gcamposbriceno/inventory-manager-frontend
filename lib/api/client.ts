@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = 'https://inventory-manager-backend-zd9h.onrender.com';
 
 export async function apiFetch<T>(
   path: string,
