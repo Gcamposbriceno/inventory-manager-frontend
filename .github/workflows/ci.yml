@@ -30,4 +30,4 @@ jobs:
         run: npx eslint .
 
       - name: Tests
-        run: npx jest --passWithNoTests
+        run: npm run test:ci
