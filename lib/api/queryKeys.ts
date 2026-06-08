@@ -23,5 +23,6 @@ export const pantryKeys = {
 export const recipeKeys = {
   all:    () => ['recipes'] as const,
   public: () => ['recipes', 'public'] as const,
-  detail: (id: number) => ['recipes', id] as const,
+  detail: (id: string) => ['recipes', id] as const,
+  mine: () => ['recipes', 'me'] as const,
 };

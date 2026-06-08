@@ -21,7 +21,6 @@ export default function RegisterScreen() {
     if (!isLoaded) return;
 
     try {
-      // console.log('REGISTER DATA:', data);
 
       const result = await signUp.create({
         emailAddress: data.email.trim().toLowerCase(),
