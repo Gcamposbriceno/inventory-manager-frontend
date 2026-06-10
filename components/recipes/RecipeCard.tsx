@@ -36,7 +36,7 @@ export function RecipeCard({ recipe, mode }: Props) {
       <View className="flex-row items-center gap-4 mt-3 pt-3 border-t border-stone dark:border-[#2E2E2C]">
         <View className="flex-row items-center gap-1.5">
           <Ionicons name="time-outline" size={14} color="#9E9B95" />
-          <Text className="text-[12px] text-ink dark:text-[#F2F0EB]">{recipe.duration}</Text>
+          <Text className="text-[12px] text-ink dark:text-[#F2F0EB]">{recipe.total_time_minutes}</Text>
         </View>
         <View className="flex-row items-center gap-1.5">
           <Ionicons name="people-outline" size={14} color="#9E9B95" />

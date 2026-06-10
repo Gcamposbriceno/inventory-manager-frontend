@@ -17,7 +17,6 @@ export default function LoginScreen() {
   const { signIn, setActive, isLoaded } = useSignIn();
 
   const onSubmit = async (data: LoginData) => {
-    // console.log(data.email, data.password);
     if (!isLoaded) return;
 
     try {
@@ -99,13 +98,6 @@ export default function LoginScreen() {
               onPress={() => router.push('/register')}
             >
               <Text className="text-forest dark:text-mint font-semibold text-base">Registrarse</Text>
-            </Pressable>
-
-            <Pressable
-              className="py-4 items-center active:opacity-60"
-              onPress={() => router.push('/pantry-setup')}
-            >
-              <Text className="text-pebble text-sm">Continuar como invitado</Text>
             </Pressable>
           </View>
         </View>
