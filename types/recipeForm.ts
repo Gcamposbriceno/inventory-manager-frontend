@@ -6,7 +6,10 @@ export type RecipeFormData = {
   is_public: boolean;
   ingredients: {
     type_id: string;
+    name: string;
+    measurement_unit: string;
     amount: string;
-    preferred_product_sku: string;
+    preferred_product_id?: string;
+    preferred_product_name?: string;
   }[];
 };

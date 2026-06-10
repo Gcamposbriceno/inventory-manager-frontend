@@ -1,25 +1,10 @@
 import { useProductTypeProducts, useProductTypes } from '@/lib/api/productTypes';
+import { RecipeFormData } from '@/types/recipeForm';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-export type RecipeFormData = {
-  name: string;
-  description: string;
-  total_time_minutes: string;
-  servings: string;
-  is_public: boolean;
-  ingredients: {
-    type_id: string;
-    name: string;
-    measurement_unit: string;
-    amount: string;
-    preferred_product_id?: string;
-    preferred_product_name?: string;
-  }[];
-};
 
 
 type Props = {
