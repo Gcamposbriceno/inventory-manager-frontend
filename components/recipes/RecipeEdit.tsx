@@ -72,7 +72,7 @@ export function RecipeEdit() {
           }
         />
         <Pressable
-          className="mx-5 mt-4 mb-6 rounded-2xl border border-red-500 py-4 items-center"
+          className="mx-5 mt-4 mb-6 rounded-xl border border-expired py-3 items-center active:opacity-80 active:scale-[0.98]"
           onPress={() => {
             deleteRecipe.mutate(undefined, {
               onSuccess: () => {
@@ -84,7 +84,7 @@ export function RecipeEdit() {
             });
           }}
         >
-          <Text className="font-semibold text-red-500">
+          <Text className="text-[15px] font-medium text-expired text-center">
             Eliminar receta
           </Text>
         </Pressable>

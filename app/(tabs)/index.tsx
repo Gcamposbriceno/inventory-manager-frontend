@@ -102,23 +102,23 @@ export default function HomeScreen() {
           {/* Inline stats */}
           <View className="flex-row items-center border border-stone dark:border-[#2E2E2C] rounded-2xl p-5 mb-7">
             <View className="flex-1 items-center gap-1">
-              <Text className="text-[30px] font-bold leading-none text-ink dark:text-[#F2F0EB]">24</Text>
+              <Text className="text-[30px] font-semibold leading-none text-ink dark:text-[#F2F0EB]">24</Text>
               <Text className="text-[11px] font-medium text-pebble">Productos</Text>
             </View>
             <View className="w-px h-9 bg-stone dark:bg-[#2E2E2C]" />
             <View className="flex-1 items-center gap-1">
-              <Text className="text-[30px] font-bold leading-none text-amber-600 dark:text-amber-400">3</Text>
+              <Text className="text-[30px] font-semibold leading-none text-amber-600 dark:text-amber-400">3</Text>
               <Text className="text-[11px] font-medium text-pebble">Bajo mínimo</Text>
             </View>
             <View className="w-px h-9 bg-stone dark:bg-[#2E2E2C]" />
             <View className="flex-1 items-center gap-1">
-              <Text className="text-[30px] font-bold leading-none text-ink dark:text-[#F2F0EB]">0</Text>
+              <Text className="text-[30px] font-semibold leading-none text-ink dark:text-[#F2F0EB]">0</Text>
               <Text className="text-[11px] font-medium text-pebble">En lista</Text>
             </View>
           </View>
 
           {/* Quick actions */}
-          <Text className="text-[11px] font-bold tracking-widest uppercase text-pebble mb-3">
+          <Text className="text-[11px] font-medium tracking-wide uppercase text-pebble mb-3">
             Acciones rápidas
           </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-7">
@@ -138,7 +138,7 @@ export default function HomeScreen() {
 
           {/* Low stock */}
           <View className="flex-row justify-between items-center mb-3">
-            <Text className="text-[11px] font-bold tracking-widest uppercase text-pebble">
+            <Text className="text-[11px] font-medium tracking-wide uppercase text-pebble">
               Bajo mínimo
             </Text>
             <Pressable onPress={() => router.push('/(tabs)/despensa')}>
@@ -154,7 +154,7 @@ export default function HomeScreen() {
           {/* Offers */}
           <View className="flex-row justify-between items-end mb-3">
             <View>
-              <Text className="text-[11px] font-bold tracking-widest uppercase text-pebble">
+              <Text className="text-[11px] font-medium tracking-wide uppercase text-pebble">
                 Ofertas de Jumbo
               </Text>
               <Text className="text-[11px] text-pebble mt-0.5">Actualizado hoy</Text>

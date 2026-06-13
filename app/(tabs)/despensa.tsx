@@ -25,25 +25,25 @@ function getStatus(r: PantryTypeOverview): Status {
 function StatusBadge({ status }: { status: Status }) {
   if (status === 'empty')
     return (
-      <View className="px-2 py-1 rounded-md bg-red-50 dark:bg-red-950">
-        <Text className="text-[11px] font-bold text-red-600 dark:text-red-400">Agotado</Text>
+      <View className="px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-950">
+        <Text className="text-[11px] font-medium text-red-600 dark:text-red-400">Agotado</Text>
       </View>
     );
   if (status === 'low')
     return (
-      <View className="px-2 py-1 rounded-md bg-amber-50 dark:bg-amber-950">
-        <Text className="text-[11px] font-bold text-amber-700 dark:text-amber-400">Bajo mín.</Text>
+      <View className="px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950">
+        <Text className="text-[11px] font-medium text-amber-700 dark:text-amber-400">Bajo mín.</Text>
       </View>
     );
   if (status === 'partial')
     return (
-      <View className="px-2 py-1 rounded-md bg-stone dark:bg-[#2E2E2C]">
-        <Text className="text-[11px] font-bold text-pebble">Por reponer</Text>
+      <View className="px-2 py-0.5 rounded-full bg-stone dark:bg-[#2E2E2C]">
+        <Text className="text-[11px] font-medium text-pebble">Por reponer</Text>
       </View>
     );
   return (
-    <View className="px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950">
-      <Text className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">OK</Text>
+    <View className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950">
+      <Text className="text-[11px] font-medium text-emerald-700 dark:text-emerald-400">OK</Text>
     </View>
   );
 }
@@ -395,7 +395,7 @@ export default function DespensaScreen() {
           </View>
         ) : types.length === 0 ? (
           <View className="mx-5 rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] py-12 items-center gap-3">
-            <Ionicons name="basket-outline" size={36} color="#9E9B95" />
+            <Ionicons name="basket-outline" size={48} color="#9E9B95" />
             <Text className="text-[15px] font-semibold text-ink dark:text-[#F2F0EB]">
               Sin productos configurados
             </Text>
@@ -408,21 +408,21 @@ export default function DespensaScreen() {
             {/* Stats */}
             <View className="mx-5 flex-row items-center border border-stone dark:border-[#2E2E2C] rounded-2xl p-5 mb-5">
               <View className="flex-1 items-center gap-1">
-                <Text className="text-[28px] font-bold leading-none text-ink dark:text-[#F2F0EB]">
+                <Text className="text-[28px] font-semibold leading-none text-ink dark:text-[#F2F0EB]">
                   {types.length}
                 </Text>
                 <Text className="text-[11px] font-medium text-pebble">Tipos</Text>
               </View>
               <View className="w-px h-9 bg-stone dark:bg-[#2E2E2C]" />
               <View className="flex-1 items-center gap-1">
-                <Text className="text-[28px] font-bold leading-none text-amber-600 dark:text-amber-400">
+                <Text className="text-[28px] font-semibold leading-none text-amber-600 dark:text-amber-400">
                   {criticalCount}
                 </Text>
                 <Text className="text-[11px] font-medium text-pebble">Bajo mínimo</Text>
               </View>
               <View className="w-px h-9 bg-stone dark:bg-[#2E2E2C]" />
               <View className="flex-1 items-center gap-1">
-                <Text className="text-[28px] font-bold leading-none text-red-500 dark:text-red-400">
+                <Text className="text-[28px] font-semibold leading-none text-red-500 dark:text-red-400">
                   {emptyCount}
                 </Text>
                 <Text className="text-[11px] font-medium text-pebble">Agotados</Text>
@@ -490,7 +490,7 @@ export default function DespensaScreen() {
             {/* Product type list */}
             {filtered.length === 0 ? (
               <View className="mx-5 rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] py-10 items-center gap-2">
-                <Ionicons name="checkmark-circle-outline" size={32} color="#9E9B95" />
+                <Ionicons name="checkmark-circle-outline" size={48} color="#9E9B95" />
                 <Text className="text-[14px] text-pebble">Todo en orden</Text>
               </View>
             ) : (

@@ -188,7 +188,7 @@ export function RecipeDetail({ mode }: Props) {
                 }
               );
             }}
-            className={`flex-row items-center justify-center gap-2 rounded-2xl border py-3 mb-6 ${
+            className={`flex-row items-center justify-center gap-2 rounded-xl border py-3 mb-6 active:opacity-80 active:scale-[0.98] ${
               mode !== 'mine' && isMine
                 ? 'bg-gray-200 dark:bg-[#2A2A28] border-stone'
                 : 'bg-white dark:bg-[#1E1E1C] border-stone'
@@ -212,7 +212,7 @@ export function RecipeDetail({ mode }: Props) {
           </Pressable>
 
           <View className="rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] p-4">
-            <Text className="text-[11px] font-bold tracking-widest uppercase text-pebble mb-2">
+            <Text className="text-[11px] font-medium tracking-wide uppercase text-pebble mb-2">
               Ingredientes
             </Text>
 
@@ -237,7 +237,7 @@ export function RecipeDetail({ mode }: Props) {
           </View>
 
           <View className="rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] p-4 mb-4">
-            <Text className="text-[11px] font-bold tracking-widest uppercase text-pebble mb-2">
+            <Text className="text-[11px] font-medium tracking-wide uppercase text-pebble mb-2">
               Preparación
             </Text>
 

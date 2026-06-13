@@ -56,7 +56,7 @@ export default function SettingsScreen() {
           </Text>
 
           {/* Apariencia */}
-          <Text className="text-[11px] font-bold tracking-widest uppercase text-pebble mb-2">
+          <Text className="text-[11px] font-medium tracking-wide uppercase text-pebble mb-2">
             Apariencia
           </Text>
           <View className="rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] overflow-hidden mb-7">
@@ -94,7 +94,7 @@ export default function SettingsScreen() {
           </View>
 
           {/* Acerca de */}
-          <Text className="text-[11px] font-bold tracking-widest uppercase text-pebble mb-2">
+          <Text className="text-[11px] font-medium tracking-wide uppercase text-pebble mb-2">
             Acerca de
           </Text>
           <View className="rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] overflow-hidden mb-7">
@@ -119,7 +119,7 @@ export default function SettingsScreen() {
           </View>
 
           {/* Integrantes */}
-          <Text className="text-[11px] font-bold tracking-widest uppercase text-pebble mb-2">
+          <Text className="text-[11px] font-medium tracking-wide uppercase text-pebble mb-2">
             Integrantes
           </Text>
           <View className="rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] overflow-hidden">

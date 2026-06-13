@@ -166,19 +166,19 @@ export function RecipeForm({
 
         <View className="gap-4">
           <View>
-            <Text className="text-[14px] font-semibold text-ink dark:text-[#F2F0EB] mb-2">
+            <Text className="text-[11px] font-medium uppercase tracking-wide text-pebble mb-1.5">
               Nombre
             </Text>
             <TextInput
               value={name}
               onChangeText={setName}
               placeholder="Nombre de la receta"
-              className="rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] px-4 py-3 text-ink dark:text-[#F2F0EB]"
+              className="rounded-xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] px-4 py-3 text-ink dark:text-[#F2F0EB]"
             />
           </View>
 
           <View>
-            <Text className="text-[14px] font-semibold text-ink dark:text-[#F2F0EB] mb-2">
+            <Text className="text-[11px] font-medium uppercase tracking-wide text-pebble mb-1.5">
               Descripción
             </Text>
             <TextInput
@@ -187,12 +187,12 @@ export function RecipeForm({
               placeholder="Describe la receta"
               multiline
               numberOfLines={4}
-              className="rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] px-4 py-3 text-ink dark:text-[#F2F0EB]"
+              className="rounded-xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] px-4 py-3 text-ink dark:text-[#F2F0EB]"
             />
           </View>
 
           <View>
-            <Text className="text-[14px] font-semibold text-ink dark:text-[#F2F0EB] mb-2">
+            <Text className="text-[11px] font-medium uppercase tracking-wide text-pebble mb-1.5">
               Tiempo (minutos)
             </Text>
             <TextInput
@@ -200,12 +200,12 @@ export function RecipeForm({
               onChangeText={setTime}
               keyboardType="numeric"
               placeholder="45"
-              className="rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] px-4 py-3 text-ink dark:text-[#F2F0EB]"
+              className="rounded-xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] px-4 py-3 text-ink dark:text-[#F2F0EB]"
             />
           </View>
 
           <View>
-            <Text className="text-[14px] font-semibold text-ink dark:text-[#F2F0EB] mb-2">
+            <Text className="text-[11px] font-medium uppercase tracking-wide text-pebble mb-1.5">
               Porciones
             </Text>
             <TextInput
@@ -213,12 +213,12 @@ export function RecipeForm({
               onChangeText={setServings}
               keyboardType="numeric"
               placeholder="4"
-              className="rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] px-4 py-3 text-ink dark:text-[#F2F0EB]"
+              className="rounded-xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] px-4 py-3 text-ink dark:text-[#F2F0EB]"
             />
           </View>
 
         <View>
-        <Text className="text-[14px] font-semibold text-ink dark:text-[#F2F0EB] mb-2">
+        <Text className="text-[11px] font-medium uppercase tracking-wide text-pebble mb-1.5">
             Visibilidad
         </Text>
 
@@ -264,7 +264,7 @@ export function RecipeForm({
         </View>
 
         <View>
-        <Text className="text-[14px] font-semibold text-ink dark:text-[#F2F0EB] mb-2">
+        <Text className="text-[11px] font-medium uppercase tracking-wide text-pebble mb-1.5">
             Ingredientes
         </Text>
 
@@ -434,7 +434,7 @@ export function RecipeForm({
             <Pressable
             disabled={isLoading}
             onPress={handleSubmit}
-            className="mt-4 flex-row items-center justify-center gap-2 rounded-2xl bg-forest py-4 active:opacity-80"
+            className="mt-4 flex-row items-center justify-center gap-2 rounded-xl bg-forest py-3 active:opacity-80 active:scale-[0.98]"
             >
             <Ionicons name="save-outline" size={18} color="#F8F7F4" />
 
