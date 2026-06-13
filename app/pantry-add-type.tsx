@@ -222,9 +222,9 @@ export default function PantryAddTypeScreen() {
               </Pressable>
             )}
             ListEmptyComponent={
-              <View className="items-center py-16 gap-2">
-                <Ionicons name="search-outline" size={32} color={muted} />
-                <Text className="text-[14px] text-pebble">Sin resultados para &quot;{search}&quot;</Text>
+              <View className="items-center py-12 gap-3">
+                <Ionicons name="search-outline" size={48} color={muted} />
+                <Text className="text-[15px] text-pebble text-center">Sin resultados para &quot;{search}&quot;</Text>
               </View>
             }
           />
@@ -341,7 +341,7 @@ export default function PantryAddTypeScreen() {
           )}
 
           <Pressable
-            className="bg-forest py-4 rounded-xl items-center active:opacity-80"
+            className="bg-forest py-3 rounded-xl items-center active:opacity-80 active:scale-[0.98]"
             onPress={handleSubmit(onSubmit)}
             disabled={addType.isPending}
           >

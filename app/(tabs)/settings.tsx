@@ -1,6 +1,7 @@
 import { usePantry } from '@/context/PantryContext';
 import { useTheme, type ThemeMode } from '@/context/ThemeContext';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { useClerk } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
 import { type ComponentProps } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
@@ -41,7 +42,11 @@ export default function SettingsScreen() {
   const { primary, muted } = useThemeColors();
   const { mode, setMode } = useTheme();
   const { clearPantry } = usePantry();
+  const { signOut } = useClerk();
 
+  const handleSignOut = async () => {
+    await signOut();
+  };
   return (
     <SafeAreaView className="flex-1 bg-cream dark:bg-[#161614]" edges={['top']}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -51,7 +56,7 @@ export default function SettingsScreen() {
           </Text>
 
           {/* Apariencia */}
-          <Text className="text-[11px] font-bold tracking-widest uppercase text-pebble mb-2">
+          <Text className="text-[11px] font-medium tracking-wide uppercase text-pebble mb-2">
             Apariencia
           </Text>
           <View className="rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] overflow-hidden mb-7">
@@ -89,7 +94,7 @@ export default function SettingsScreen() {
           </View>
 
           {/* Acerca de */}
-          <Text className="text-[11px] font-bold tracking-widest uppercase text-pebble mb-2">
+          <Text className="text-[11px] font-medium tracking-wide uppercase text-pebble mb-2">
             Acerca de
           </Text>
           <View className="rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] overflow-hidden mb-7">
@@ -114,7 +119,7 @@ export default function SettingsScreen() {
           </View>
 
           {/* Integrantes */}
-          <Text className="text-[11px] font-bold tracking-widest uppercase text-pebble mb-2">
+          <Text className="text-[11px] font-medium tracking-wide uppercase text-pebble mb-2">
             Integrantes
           </Text>
           <View className="rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] overflow-hidden">
@@ -139,6 +144,14 @@ export default function SettingsScreen() {
           >
             <Text className="text-[15px] font-semibold text-expired">Salir de la despensa</Text>
           </Pressable>
+        <Pressable
+          className="mt-3 rounded-2xl border border-expired/40 bg-expired/10 py-3.5 items-center active:opacity-70"
+          onPress={handleSignOut}
+        >
+          <Text className="text-[15px] font-semibold text-expired">
+            Cerrar sesión
+          </Text>
+        </Pressable>
         </View>
       </ScrollView>
     </SafeAreaView>

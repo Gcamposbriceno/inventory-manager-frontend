@@ -15,7 +15,7 @@ export const TextField = forwardRef<TextInput, Props>(
     return (
       <View>
         {label && (
-          <Text className="text-[13px] font-medium text-pebble mb-1.5">{label}</Text>
+          <Text className="text-[11px] font-medium uppercase tracking-wide text-pebble mb-1.5">{label}</Text>
         )}
         <TextInput
           ref={ref}
