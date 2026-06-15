@@ -3,29 +3,25 @@ import { Tabs } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import { type ComponentProps } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useThemeColors } from '@/hooks/useThemeColors';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
-const COLORS = {
-  light: { bar: '#F8F7F4', border: '#E8E6E1', active: '#1B4332', inactive: '#9E9B95' },
-  dark:  { bar: '#161614', border: '#2E2E2C', active: '#52B788', inactive: '#9E9B95' },
-};
-
 function TabIcon({ name, focused }: { name: IconName; focused: boolean }) {
-  const { colorScheme } = useColorScheme();
-  const c = COLORS[colorScheme === 'dark' ? 'dark' : 'light'];
+  const colors = useThemeColors();
   return (
     <Ionicons
       name={focused ? name : (`${name}-outline` as IconName)}
       size={22}
-      color={focused ? c.active : c.inactive}
+      color={focused ? colors.primary : colors.muted}
     />
   );
 }
 
 export default function TabLayout() {
+  const colors = useThemeColors();
   const { colorScheme } = useColorScheme();
-  const c = COLORS[colorScheme === 'dark' ? 'dark' : 'light'];
+  const isDark = colorScheme === 'dark';
   const insets = useSafeAreaInsets();
   const bottomInset = Math.max(insets.bottom, 10);
 
@@ -34,15 +30,15 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: c.bar,
-          borderTopColor: c.border,
+          backgroundColor: isDark ? '#161614' : colors.cream,
+          borderTopColor: isDark ? '#2E2E2C' : colors.stone,
           borderTopWidth: 1,
           height: 64 + bottomInset,
           paddingTop: 8,
           paddingBottom: bottomInset,
         },
-        tabBarActiveTintColor: c.active,
-        tabBarInactiveTintColor: c.inactive,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.muted,
         tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
       }}
     >

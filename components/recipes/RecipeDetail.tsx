@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useThemeColors } from '@/hooks/useThemeColors';
 
 type Props = {
   mode: 'mine' | 'public';
@@ -52,6 +53,7 @@ function IngredientRow({
 }
 
 export function RecipeDetail({ mode }: Props) {
+  const colors = useThemeColors();
   const { id } = useLocalSearchParams();
   const { data: productTypes = [] } = useProductTypes();
   const createRecipe = useCreateRecipe();
@@ -111,7 +113,7 @@ export function RecipeDetail({ mode }: Props) {
             <Ionicons
               name="restaurant-outline"
               size={56}
-              color="#2D6A4F"
+              color={colors.sage}
             />
           </View>
 
@@ -124,7 +126,7 @@ export function RecipeDetail({ mode }: Props) {
               <Ionicons
                 name="time-outline"
                 size={16}
-                color="#9E9B95"
+                color={colors.muted}
               />
               <Text className="text-ink dark:text-[#F2F0EB]">
                 {recipe.total_time_minutes}
@@ -135,7 +137,7 @@ export function RecipeDetail({ mode }: Props) {
               <Ionicons
                 name="people-outline"
                 size={16}
-                color="#9E9B95"
+                color={colors.muted}
               />
               <Text className="text-ink dark:text-[#F2F0EB]">
                 {recipe.servings}
@@ -203,7 +205,7 @@ export function RecipeDetail({ mode }: Props) {
                     : 'copy-outline'
               }
               size={18}
-              color="#2D6A4F"
+              color={colors.sage}
             />
 
             <Text className="text-[14px] font-semibold text-forest dark:text-mint">

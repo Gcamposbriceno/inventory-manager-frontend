@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Pressable, Text } from 'react-native';
+import { useThemeColors } from '@/hooks/useThemeColors';
 
 type Props = {
   variant?: 'text' | 'icon';
@@ -9,13 +10,14 @@ type Props = {
 };
 
 export function BackButton({ variant = 'text', label = '← Volver', className = '' }: Props) {
+  const colors = useThemeColors();
   if (variant === 'icon') {
     return (
       <Pressable
         onPress={() => router.back()}
         className={`w-10 h-10 rounded-full bg-white dark:bg-[#1E1E1C] border border-stone dark:border-[#2E2E2C] items-center justify-center active:opacity-80 ${className}`.trim()}
       >
-        <Ionicons name="arrow-back" size={20} color="#9E9B95" />
+        <Ionicons name="arrow-back" size={20} color={colors.muted} />
       </Pressable>
     );
   }
