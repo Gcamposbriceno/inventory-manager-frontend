@@ -1,5 +1,5 @@
 import { useApiFetch } from '@/hooks/useApiFetch';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import type {
   Pantry,
   PantryMember,
@@ -19,6 +19,17 @@ export function usePantryOverview(pantryId: string) {
     queryKey: pantryKeys.overview(pantryId),
     queryFn: () => apiFetch(`/pantries/${pantryId}/overview`),
     enabled: !!pantryId,
+  });
+}
+
+export function useAllPantriesOverview(pantries: Pantry[]) {
+  const apiFetch = useApiFetch();
+  return useQueries({
+    queries: pantries.map((p) => ({
+      queryKey: pantryKeys.overview(p.id),
+      queryFn: () => apiFetch<PantryTypeOverview[]>(`/pantries/${p.id}/overview`),
+      enabled: !!p.id,
+    })),
   });
 }
 
