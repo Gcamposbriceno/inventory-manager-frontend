@@ -1,10 +1,11 @@
 import { useRef, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { useProduct } from '@/lib/api/products';
 
 const FRAME_W = 252;
 const FRAME_H = 140;
@@ -44,6 +45,7 @@ export default function ScannerScreen() {
   const colors = useThemeColors();
   const [permission, requestPermission] = useCameraPermissions();
   const [scannedCode, setScannedCode] = useState<string | null>(null);
+  const { data: product, isLoading: productLoading, isError: productNotFound } = useProduct(scannedCode ?? '');
   const [torchOn, setTorchOn] = useState(false);
   const [mode, setMode] = useState<ConsumptionMode>('all');
   const [amount, setAmount] = useState(0.5);
@@ -90,15 +92,16 @@ export default function ScannerScreen() {
   }
 
   return (
-    <CameraView
-      className="flex-1"
-      facing="back"
-      enableTorch={torchOn}
-      barcodeScannerSettings={{
-        barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128', 'code39', 'qr'],
-      }}
-      onBarcodeScanned={scannedCode ? undefined : handleBarcodeScanned}
-    >
+    <View className="flex-1">
+      <CameraView
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        facing="back"
+        enableTorch={torchOn}
+        barcodeScannerSettings={{
+          barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128', 'code39', 'qr'],
+        }}
+        onBarcodeScanned={scannedCode ? undefined : handleBarcodeScanned}
+      />
       {/* Dimmed overlay with transparent scan window */}
       <View className="absolute inset-0" pointerEvents="none">
         <View className="flex-1 bg-black/[0.72]" />
@@ -162,17 +165,40 @@ export default function ScannerScreen() {
           {/* Handle */}
           <View className="w-9 h-1 rounded-full bg-stone self-center mb-5" />
 
-          {/* Scanned code card — product lookup pending backend EAN support */}
+          {/* Product card */}
           <View className="flex-row items-center gap-3 p-3 bg-mist rounded-2xl mb-6">
-            <View className="w-11 h-11 rounded-xl bg-white items-center justify-center shrink-0">
-              <Ionicons name="barcode-outline" size={22} color={colors.mint} />
+            <View className="w-11 h-11 rounded-xl bg-white items-center justify-center shrink-0 overflow-hidden">
+              {product?.image_url ? (
+                <Image source={{ uri: product.image_url }} style={{ width: 44, height: 44 }} resizeMode="contain" />
+              ) : (
+                <Ionicons
+                  name={productNotFound ? 'help-circle-outline' : 'barcode-outline'}
+                  size={22}
+                  color={productNotFound ? colors.muted : colors.mint}
+                />
+              )}
             </View>
+
             <View className="flex-1">
-              <Text className="text-base font-semibold text-ink">Código detectado</Text>
-              <Text className="text-xs text-pebble font-mono">{scannedCode}</Text>
+              {productLoading ? (
+                <ActivityIndicator size="small" color={colors.mint} />
+              ) : productNotFound ? (
+                <>
+                  <Text className="text-base font-semibold text-ink">No encontrado</Text>
+                  <Text className="text-xs text-pebble font-mono">{scannedCode}</Text>
+                </>
+              ) : (
+                <>
+                  <Text className="text-base font-semibold text-ink" numberOfLines={1}>{product!.name}</Text>
+                  <Text className="text-xs text-pebble">{product!.brand} · {product!.unit_amount}</Text>
+                </>
+              )}
             </View>
-            <View className="px-2 py-0.5 rounded-lg bg-emerald-50">
-              <Text className="text-xs font-semibold text-emerald-800">Detectado</Text>
+
+            <View className={`px-2 py-0.5 rounded-lg ${productNotFound ? 'bg-stone' : 'bg-emerald-50'}`}>
+              <Text className={`text-xs font-semibold ${productNotFound ? 'text-pebble' : 'text-emerald-800'}`}>
+                {productLoading ? '...' : productNotFound ? 'Sin coincidencia' : 'Detectado'}
+              </Text>
             </View>
           </View>
 
@@ -251,6 +277,6 @@ export default function ScannerScreen() {
           </Pressable>
         </View>
       )}
-    </CameraView>
+    </View>
   );
 }
