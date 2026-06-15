@@ -62,9 +62,8 @@ export default function HomeScreen() {
   const { primary, muted, warn } = useThemeColors();
 
   const quickActions: { icon: IconName; label: string; onPress: () => void }[] = [
-    { icon: 'barcode-outline',  label: 'Escanear',      onPress: () => {} },
-    { icon: 'cart-outline',     label: 'Generar lista',  onPress: () => router.push('/(tabs)/lista') },
-    { icon: 'book-outline',     label: 'Recetas',        onPress: () => router.push('/(tabs)/recetas' as any) },
+    { icon: 'barcode-outline', label: 'Escanear',  onPress: () => router.push('/scanner') },
+    { icon: 'cart-outline',    label: 'Ver lista', onPress: () => router.push('/(tabs)/lista') },
   ];
 
   return (
