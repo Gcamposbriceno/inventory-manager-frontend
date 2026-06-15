@@ -2,10 +2,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useQueries } from '@tanstack/react-query';
-import { useApiFetch } from '@/hooks/useApiFetch';
-import { usePantries } from '@/lib/api/pantries';
-import { pantryKeys } from '@/lib/api/queryKeys';
+import { useAllPantriesOverview, usePantries } from '@/lib/api/pantries';
 import type { PantryTypeOverview } from '@/types/pantry';
 
 type ItemStatus = 'empty' | 'low' | 'partial';
@@ -131,18 +128,11 @@ function Section({
 }
 
 export default function ListaScreen() {
-  const apiFetch = useApiFetch();
   const { data: pantries, isLoading: pantriesLoading } = usePantries();
   const [listaPantry, setListaPantry] = useState<string>('all');
   const [checked, setChecked] = useState<Record<string, boolean>>({});
 
-  const overviewQueries = useQueries({
-    queries: (pantries ?? []).map((p) => ({
-      queryKey: pantryKeys.overview(p.id),
-      queryFn: () => apiFetch<PantryTypeOverview[]>(`/pantries/${p.id}/overview`),
-      enabled: !!p.id,
-    })),
-  });
+  const overviewQueries = useAllPantriesOverview(pantries ?? []);
 
   const isLoading = pantriesLoading || overviewQueries.some((q) => q.isLoading);
 
