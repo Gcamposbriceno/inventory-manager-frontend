@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useThemeColors } from '@/hooks/useThemeColors';
-import { useProduct } from '@/lib/api/products';
+import { useProductByEan } from '@/lib/api/products';
 
 const FRAME_W = 252;
 const FRAME_H = 140;
@@ -45,7 +45,7 @@ export default function ScannerScreen() {
   const colors = useThemeColors();
   const [permission, requestPermission] = useCameraPermissions();
   const [scannedCode, setScannedCode] = useState<string | null>(null);
-  const { data: product, isLoading: productLoading, isError: productNotFound } = useProduct(scannedCode ?? '');
+  const { data: product, isLoading: productLoading, isError: productNotFound } = useProductByEan(scannedCode ?? '');
   const [torchOn, setTorchOn] = useState(false);
   const [mode, setMode] = useState<ConsumptionMode>('all');
   const [amount, setAmount] = useState(0.5);

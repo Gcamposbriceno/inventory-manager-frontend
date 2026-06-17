@@ -7,6 +7,7 @@ export const productTypeKeys = {
 export const productKeys = {
   all:    () => ['products'] as const,
   detail: (sku: string) => ['products', sku] as const,
+  byEan:  (ean: string) => ['products', 'ean', ean] as const,
 };
 
 export const pantryKeys = {
