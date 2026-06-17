@@ -1,4 +1,5 @@
 import { PantryProvider, usePantry } from '@/context/PantryContext';
+import { PlannerProvider } from '@/context/PlannerContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 import { DMSerifDisplay_400Regular, useFonts } from '@expo-google-fonts/dm-serif-display';
@@ -86,9 +87,11 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <PantryProvider>
-            <ThemeProvider>
-              <Layout />
-            </ThemeProvider>
+            <PlannerProvider>
+              <ThemeProvider>
+                <Layout />
+              </ThemeProvider>
+            </PlannerProvider>
           </PantryProvider>
         </QueryClientProvider>
       </SafeAreaProvider>
