@@ -1,5 +1,9 @@
 import { useThemeColors } from '@/hooks/useThemeColors';
-import { useAddPantryProduct, useAddPantryProductType, useUpdatePantryStock } from '@/lib/api/pantries';
+import {
+  useAddPantryProduct,
+  useAddPantryProductType,
+  useUpdatePantryStock,
+} from '@/lib/api/pantries';
 import { useProductTypeProducts, useProductTypes } from '@/lib/api/productTypes';
 import type { Product } from '@/types/product';
 import type { ProductType } from '@/types/productType';
@@ -21,17 +25,23 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 // ── constants ────────────────────────────────────────────────────────────────
 
 const UNIT_SHORT: Record<string, string> = { kg: 'kg', l: 'L', ml: 'ml', g: 'g', un: 'ud.' };
-const UNIT_LONG: Record<string, string>  = { kg: 'kilogramos', l: 'litros', ml: 'mililitros', g: 'gramos', un: 'unidades' };
-const STEP_SIZE: Record<string, number>  = { un: 1, kg: 0.5, l: 0.5, ml: 100, g: 50 };
-const DECIMALS: Record<string, number>   = { un: 0, kg: 1, l: 1, ml: 0, g: 0 };
+const UNIT_LONG: Record<string, string> = {
+  kg: 'kilogramos',
+  l: 'litros',
+  ml: 'mililitros',
+  g: 'gramos',
+  un: 'unidades',
+};
+const STEP_SIZE: Record<string, number> = { un: 1, kg: 0.5, l: 0.5, ml: 100, g: 50 };
+const DECIMALS: Record<string, number> = { un: 0, kg: 1, l: 1, ml: 0, g: 0 };
 
 type Step = 'search' | 'configure' | 'products';
 
 // ── step indicator ────────────────────────────────────────────────────────────
 
 const STEPS = [
-  { n: '1', label: 'Tipo'      },
-  { n: '2', label: 'Umbrales'  },
+  { n: '1', label: 'Tipo' },
+  { n: '2', label: 'Umbrales' },
   { n: '3', label: 'Productos' },
 ];
 
@@ -42,16 +52,27 @@ function StepIndicator({ active }: { active: 0 | 1 | 2 }) {
         const done = i < active;
         const curr = i === active;
         return (
-          <View key={s.n} className={`flex-row items-center ${i < STEPS.length - 1 ? 'flex-1' : ''}`}>
+          <View
+            key={s.n}
+            className={`flex-row items-center ${i < STEPS.length - 1 ? 'flex-1' : ''}`}
+          >
             <View className="flex-row items-center gap-1.5 flex-shrink-0">
               <View
                 className={`w-5 h-5 rounded-full items-center justify-center ${
-                  done ? 'bg-mist dark:bg-[#0D2B1A]' : curr ? 'bg-forest dark:bg-mint' : 'bg-stone dark:bg-[#2E2E2C]'
+                  done
+                    ? 'bg-mist dark:bg-[#0D2B1A]'
+                    : curr
+                      ? 'bg-forest dark:bg-mint'
+                      : 'bg-stone dark:bg-[#2E2E2C]'
                 }`}
               >
                 <Text
                   className={`text-[10px] font-bold ${
-                    done ? 'text-forest dark:text-mint' : curr ? 'text-cream dark:text-[#161614]' : 'text-pebble'
+                    done
+                      ? 'text-forest dark:text-mint'
+                      : curr
+                        ? 'text-cream dark:text-[#161614]'
+                        : 'text-pebble'
                   }`}
                 >
                   {done ? '✓' : s.n}
@@ -85,7 +106,9 @@ function TypeCard({ name, unit, pantryName }: { name: string; unit: string; pant
       </View>
       <View>
         <Text className="text-[15px] font-semibold text-ink dark:text-[#F2F0EB]">{name}</Text>
-        <Text className="text-[12px] text-pebble">{unit} · {pantryName}</Text>
+        <Text className="text-[12px] text-pebble">
+          {unit} · {pantryName}
+        </Text>
       </View>
     </View>
   );
@@ -113,7 +136,9 @@ function Stepper({
   return (
     <View className="mb-6">
       <View className="mb-3">
-        <Text className="text-[15px] font-semibold text-ink dark:text-[#F2F0EB] mb-0.5">{label}</Text>
+        <Text className="text-[15px] font-semibold text-ink dark:text-[#F2F0EB] mb-0.5">
+          {label}
+        </Text>
         <Text className="text-[12px] text-pebble">{hint}</Text>
       </View>
       <View className="flex-row items-center bg-white dark:bg-[#1E1E1C] rounded-2xl border border-stone dark:border-[#2E2E2C] p-1 gap-1">
@@ -169,7 +194,11 @@ function LocalProductRow({
       <View className="flex-row items-center gap-3 py-3.5 px-0">
         <View className="w-10 h-10 rounded-xl bg-stone dark:bg-[#2E2E2C] overflow-hidden items-center justify-center flex-shrink-0">
           {product.image_url ? (
-            <Image source={{ uri: product.image_url }} style={{ width: 40, height: 40 }} resizeMode="contain" />
+            <Image
+              source={{ uri: product.image_url }}
+              style={{ width: 40, height: 40 }}
+              resizeMode="contain"
+            />
           ) : (
             <Ionicons name="cube-outline" size={18} color="#9E9B95" />
           )}
@@ -188,7 +217,10 @@ function LocalProductRow({
             >
               <Text className="text-[18px] leading-none text-ink dark:text-[#F2F0EB]">−</Text>
             </Pressable>
-            <Text className="text-[14px] font-semibold text-ink dark:text-[#F2F0EB] text-center" style={{ minWidth: 20 }}>
+            <Text
+              className="text-[14px] font-semibold text-ink dark:text-[#F2F0EB] text-center"
+              style={{ minWidth: 20 }}
+            >
               {count}
             </Text>
             <Pressable
@@ -241,7 +273,7 @@ function ProductsStep({
   const { data: typeProducts, isLoading } = useProductTypeProducts(typeName);
   const q = search.toLowerCase();
   const filtered = (typeProducts ?? []).filter(
-    (p) => p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q),
+    (p) => p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q)
   );
   const addedCount = Object.values(addedSkus).filter((v) => v > 0).length;
 
@@ -353,21 +385,21 @@ export default function PantryAddTypeScreen() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const { data: allTypes, isLoading: typesLoading } = useProductTypes();
-  const addType    = useAddPantryProductType();
+  const addType = useAddPantryProductType();
   const addProduct = useAddPantryProduct();
   const updateStock = useUpdatePantryStock();
 
-  const unitKey    = selectedType?.measurement_unit ?? 'un';
-  const unitShort  = UNIT_SHORT[unitKey] ?? unitKey;
-  //const unitLong   = UNIT_LONG[unitKey]  ?? unitKey;
-  const stepSize   = STEP_SIZE[unitKey]  ?? 1;
-  const dec        = DECIMALS[unitKey]   ?? 0;
+  const unitKey = selectedType?.measurement_unit ?? 'un';
+  const unitShort = UNIT_SHORT[unitKey] ?? unitKey;
+  const unitLong = UNIT_LONG[unitKey] ?? unitKey;
+  const stepSize = STEP_SIZE[unitKey] ?? 1;
+  const dec = DECIMALS[unitKey] ?? 0;
 
-  const desInvalid  = desiredStock > 0 && desiredStock < rop;
+  const desInvalid = desiredStock > 0 && desiredStock < rop;
   const canContinue = rop > 0 && desiredStock >= rop;
 
   const filtered = (allTypes ?? []).filter((t) =>
-    t.name.toLowerCase().includes(search.toLowerCase()),
+    t.name.toLowerCase().includes(search.toLowerCase())
   );
 
   function selectType(type: ProductType) {
@@ -536,7 +568,9 @@ export default function PantryAddTypeScreen() {
           Agregar tipo
         </Text>
         {pantryName ? (
-          <Text className="text-[13px] font-semibold text-forest dark:text-mint mb-1">{pantryName}</Text>
+          <Text className="text-[13px] font-semibold text-forest dark:text-mint mb-1">
+            {pantryName}
+          </Text>
         ) : null}
         <Text className="text-[13px] text-pebble mb-5">¿Qué tipo de producto quieres seguir?</Text>
 
@@ -571,9 +605,7 @@ export default function PantryAddTypeScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
           keyboardShouldPersistTaps="handled"
-          ItemSeparatorComponent={() => (
-            <View className="h-px bg-stone dark:bg-[#2E2E2C]" />
-          )}
+          ItemSeparatorComponent={() => <View className="h-px bg-stone dark:bg-[#2E2E2C]" />}
           renderItem={({ item }) => (
             <Pressable
               className="flex-row items-center justify-between py-3.5 active:opacity-70"

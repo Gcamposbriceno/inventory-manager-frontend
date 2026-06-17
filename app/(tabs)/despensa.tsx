@@ -309,6 +309,8 @@ export default function DespensaScreen() {
 
   const selectedPantryName = (pantries ?? []).find((p) => p.id === selectedPantryId)?.name ?? '';
 
+  console.log('pantry overview:', JSON.stringify(overview, null, 2));
+
   const types = overview ?? [];
   const emptyCount    = types.filter((r) => getStatus(r) === 'empty').length;
   const criticalCount = types.filter((r) => ['empty', 'low'].includes(getStatus(r))).length;
