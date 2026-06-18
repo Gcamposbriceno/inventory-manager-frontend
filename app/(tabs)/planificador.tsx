@@ -1,10 +1,12 @@
 import { DAYS, todayKey, usePlanner, type DayKey } from '@/context/PlannerContext';
+import { usePantry, usePantryProducts, useUpdatePantryStock } from '@/lib/api/pantries';
+import { useProductTypes } from '@/lib/api/productTypes';
 import { usePublicRecipes, useRecipesMe } from '@/lib/api/recipes';
 import type { Recipe } from '@/types/recipe';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function PlanificadorScreen() {
@@ -12,9 +14,16 @@ export default function PlanificadorScreen() {
   const [selectedDay, setSelectedDay] = useState<DayKey>(todayKey());
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerSearch, setPickerSearch] = useState('');
-
+  const [cookModalOpen, setCookModalOpen] = useState(false);
+  const [selectedMeal, setSelectedMeal] = useState<any>(null);
+  const { data: productTypes = [] } = useProductTypes();
+  const [resolvedIngredients, setResolvedIngredients] = useState<any[]>([]);
   const { data: myRecipes = [] } = useRecipesMe();
   const { data: publicRecipes = [] } = usePublicRecipes();
+  const { data: pantries = [] } = usePantry();
+  const [selectedPantryId, setSelectedPantryId] = useState<string | null>(null);
+  const updateStock = useUpdatePantryStock();
+  const { data: pantryProducts = [] } = usePantryProducts(selectedPantryId ?? '');
 
   const allRecipes = useMemo(() => {
     const seen = new Set<string>();
@@ -40,7 +49,33 @@ export default function PlanificadorScreen() {
     setPickerSearch('');
     setPickerOpen(true);
   }
+  const productTypeMap = useMemo(
+    () =>
+      Object.fromEntries(
+        productTypes.map((type) => [type.id, type])
+      ),
+    [productTypes]
+  );
 
+  async function openCookModal(meal: any) {
+    const factor = meal.porciones / meal.servings;
+
+    const ingredients = (meal.ingredientes ?? []).map((ingredient: any) => ({
+      name: productTypeMap[ingredient.type_id]?.name ?? 'Desconocido',
+      amount: ingredient.amount * factor,
+    }));
+
+    const totalIngredients = ingredients.length;
+
+    setResolvedIngredients(ingredients);
+    setSelectedMeal({
+      ...meal,
+      totalIngredients,
+      factor,
+    });
+    setSelectedPantryId(null);
+    setCookModalOpen(true);
+  }
   if (pickerOpen) {
     return (
       <SafeAreaView className="flex-1 bg-cream dark:bg-[#161614]" edges={['top']}>
@@ -222,12 +257,14 @@ export default function PlanificadorScreen() {
                     onPress={() => removeFromDay(selectedDay, meal.uid)}
                     className="pl-2 pt-0.5 active:opacity-60"
                   >
-                    <Ionicons name="close" size={16} color="#9E9B95" />
+                    <Ionicons name="close" size={24} color="#9E9B95" />
                   </Pressable>
                 </View>
 
                 <View className="flex-row items-center justify-between border-t border-stone dark:border-[#2E2E2C] pt-3">
-                  <Text className="text-[13px] text-pebble">Porciones</Text>
+                  <Text className="text-[13px] font-semibold text-ink dark:text-[#F2F0EB]">
+                    Porciones
+                  </Text>
                   <View className="flex-row items-center gap-3.5">
                     <Pressable
                       onPress={() => updatePorciones(selectedDay, meal.uid, -1)}
@@ -256,6 +293,14 @@ export default function PlanificadorScreen() {
                     </Pressable>
                   </View>
                 </View>
+                <Pressable
+                  onPress={() => openCookModal(meal)}
+                  className="mt-3 py-3 rounded-xl bg-forest active:opacity-80"
+                >
+                  <Text className="text-center text-cream font-semibold">
+                    Marcar como cocinada
+                  </Text>
+                </Pressable>
               </View>
             ))}
 
@@ -271,6 +316,158 @@ export default function PlanificadorScreen() {
           </>
         )}
       </ScrollView>
+    <Modal
+      visible={cookModalOpen}
+      transparent
+      animationType="fade"
+      onRequestClose={() => setCookModalOpen(false)}
+    >
+      <View className="flex-1 bg-black/40 items-center justify-center px-5">
+        <View className="w-full rounded-2xl bg-white dark:bg-[#1E1E1C] p-5">
+
+          <Text className="text-[18px] font-semibold text-ink dark:text-[#F2F0EB]">
+            Marcar como cocinada
+          </Text>
+
+          <Text className="text-[14px] text-pebble mt-2">
+            En caso de que no tengas la cantidad necesaria de un ingrediente en la despensa,
+            este quedará en 0.
+          </Text>
+
+          <Text className="text-[14px] font-semibold text-ink dark:text-[#F2F0EB] mt-4">
+            Despensa
+          </Text>
+
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              gap: 8,
+              paddingTop: 8,
+            }}
+          >
+            {pantries.map((pantry) => {
+              const selected = pantry.id === selectedPantryId;
+
+              return (
+                <Pressable
+                  key={pantry.id}
+                  onPress={() => setSelectedPantryId(pantry.id)}
+                  className={`px-4 py-2 rounded-xl border ${
+                    selected
+                      ? 'bg-mist dark:bg-[#0D2B1A] border-sage'
+                      : 'bg-stone dark:bg-[#2E2E2C] border-stone dark:border-[#2E2E2C]'
+                  }`}
+                >
+                  <View className="flex-row items-center gap-2">
+                    {selected && (
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={16}
+                        color="#2D6A4F"
+                      />
+                    )}
+
+                    <Text
+                      className={`font-medium ${
+                        selected
+                          ? 'text-forest dark:text-mint'
+                          : 'text-ink dark:text-[#F2F0EB]'
+                      }`}
+                    >
+                      {pantry.name}
+                    </Text>
+                  </View>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+
+          {/* INGREDIENTES */}
+          <View className="mt-4">
+            <Text className="text-[14px] font-semibold text-ink dark:text-[#F2F0EB]">
+              Se consumirán:
+            </Text>
+
+            {resolvedIngredients?.length > 0 ? (
+              resolvedIngredients.map((ing, idx) => (
+                <Text key={idx} className="text-[13px] text-pebble mt-1">
+                  • {ing.amount} {ing.name}
+                </Text>
+              ))
+            ) : (
+              <Text className="text-[13px] text-pebble mt-1">
+                No se pudieron calcular los ingredientes
+              </Text>
+            )}
+          </View>
+
+          <Text className="text-[14px] text-pebble mt-4">
+            ¿Deseas marcar &quot;{selectedMeal?.name}&quot; como cocinada?
+          </Text>
+
+          <View className="flex-row justify-end gap-3 mt-5">
+            <Pressable
+              onPress={() => {
+                setCookModalOpen(false);
+                setSelectedMeal(null);
+                setSelectedPantryId(null);
+              }}
+              className="px-4 py-2"
+            >
+              <Text className="text-pebble">Cancelar</Text>
+            </Pressable>
+
+            <Pressable
+              disabled={!selectedPantryId}
+              onPress={async () => {
+                if (!selectedPantryId || !selectedMeal) return;
+
+                const factor = selectedMeal.porciones / selectedMeal.servings;
+
+                for (const ingredient of selectedMeal.ingredientes) {
+                  const amountToConsume = ingredient.amount * factor;
+
+                  if (ingredient.preferred_product_sku) {
+                    const product = pantryProducts.find(
+                      (p) => p.product_sku === ingredient.preferred_product_sku,
+                    );
+
+                    if (!product) continue;
+
+                    await updateStock.mutateAsync({
+                      pantryId: selectedPantryId,
+                      sku: product.product_sku,
+                      stock: Math.max(0, product.stock - amountToConsume),
+                    });
+                  }
+                }
+
+                setCookModalOpen(false);
+                setSelectedMeal(null);
+                setSelectedPantryId(null);
+              }}
+              className={`px-4 py-2 rounded-lg ${
+                selectedPantryId
+                  ? 'bg-forest'
+                  : 'bg-stone dark:bg-[#2E2E2C]'
+              }`}
+            >
+              <Text
+                className={`font-semibold ${
+                  selectedPantryId
+                    ? 'text-cream'
+                    : 'text-pebble'
+                }`}
+              >
+                Confirmar
+              </Text>
+            </Pressable>
+          </View>
+
+        </View>
+      </View>
+    </Modal>
     </SafeAreaView>
   );
 }

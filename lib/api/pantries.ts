@@ -1,17 +1,30 @@
 import { useApiFetch } from '@/hooks/useApiFetch';
-import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import type {
+  AddPantryProductTypeData,
   Pantry,
   PantryMember,
   PantryProduct,
   PantryProductType,
   PantryTypeOverview,
-  AddPantryProductTypeData,
   UpdatePantryProductTypeData,
 } from '@/types/pantry';
+import { useAuth } from '@clerk/clerk-expo';
+import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { pantryKeys } from './queryKeys';
 
 // --- Overview ---
+export function usePantry() {
+  const apiFetch = useApiFetch();
+  const { isLoaded } = useAuth();
+
+  return useQuery<Pantry[]>({
+    queryKey: pantryKeys.list(),
+    enabled: isLoaded,
+    queryFn: async () => {
+      return apiFetch("/pantries/");
+    },
+  });
+}
 
 export function usePantryOverview(pantryId: string) {
   const apiFetch = useApiFetch();
@@ -171,6 +184,7 @@ export function useAddPantryProduct() {
     onSuccess: (_result, { pantryId }) => {
       queryClient.invalidateQueries({ queryKey: pantryKeys.products(pantryId) });
       queryClient.invalidateQueries({ queryKey: pantryKeys.overview(pantryId) });
+      queryClient.invalidateQueries({ queryKey: pantryKeys.all() });
     },
   });
 }
@@ -184,6 +198,7 @@ export function useUpdatePantryStock() {
     onSuccess: (_result, { pantryId }) => {
       queryClient.invalidateQueries({ queryKey: pantryKeys.products(pantryId) });
       queryClient.invalidateQueries({ queryKey: pantryKeys.overview(pantryId) });
+      queryClient.invalidateQueries({ queryKey: pantryKeys.all() });
     },
   });
 }
@@ -197,6 +212,7 @@ export function useRemovePantryProduct() {
     onSuccess: (_result, { pantryId }) => {
       queryClient.invalidateQueries({ queryKey: pantryKeys.products(pantryId) });
       queryClient.invalidateQueries({ queryKey: pantryKeys.overview(pantryId) });
+      queryClient.invalidateQueries({ queryKey: pantryKeys.all() });
     },
   });
 }
@@ -221,6 +237,7 @@ export function useAddPantryProductType() {
     onSuccess: (_result, { pantryId }) => {
       queryClient.invalidateQueries({ queryKey: pantryKeys.productTypes(pantryId) });
       queryClient.invalidateQueries({ queryKey: pantryKeys.overview(pantryId) });
+      queryClient.invalidateQueries({ queryKey: pantryKeys.all() });
     },
   });
 }
@@ -233,6 +250,7 @@ export function useUpdatePantryProductType() {
       apiFetch(`/pantries/${pantryId}/product-types/${typeId}`, { method: 'PATCH', body: JSON.stringify(data) }),
     onSuccess: (_result, { pantryId }) => {
       queryClient.invalidateQueries({ queryKey: pantryKeys.productTypes(pantryId) });
+      queryClient.invalidateQueries({ queryKey: pantryKeys.all() });
     },
   });
 }
@@ -246,6 +264,7 @@ export function useRemovePantryProductType() {
     onSuccess: (_result, { pantryId }) => {
       queryClient.invalidateQueries({ queryKey: pantryKeys.productTypes(pantryId) });
       queryClient.invalidateQueries({ queryKey: pantryKeys.overview(pantryId) });
+      queryClient.invalidateQueries({ queryKey: pantryKeys.all() });
     },
   });
 }

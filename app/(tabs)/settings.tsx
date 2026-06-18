@@ -1,12 +1,11 @@
-import { usePantry } from '@/context/PantryContext';
 import { useTheme, type ThemeMode } from '@/context/ThemeContext';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { useLeavePantry, usePantry } from '@/lib/api/pantries';
 import { useClerk } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
-import { type ComponentProps } from 'react';
+import { useState, type ComponentProps } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
 const THEME_OPTIONS: { value: ThemeMode; label: string; description: string; icon: IconName }[] = [
@@ -39,11 +38,14 @@ const MEMBERS = [
 ];
 
 export default function SettingsScreen() {
+  const leavePantryMutation = useLeavePantry();
+  const { data: pantries } = usePantry();
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedPantry, setSelectedPantry] = useState<string | null>(null);
   const { primary, muted } = useThemeColors();
   const { mode, setMode } = useTheme();
-  const { clearPantry } = usePantry();
   const { signOut } = useClerk();
-
   const handleSignOut = async () => {
     await signOut();
   };
@@ -137,12 +139,13 @@ export default function SettingsScreen() {
               </View>
             ))}
           </View>
-
           <Pressable
             className="mt-6 rounded-2xl border border-expired/40 bg-expired/10 py-3.5 items-center active:opacity-70"
-            onPress={clearPantry}
+            onPress={() => setModalVisible(true)}
           >
-            <Text className="text-[15px] font-semibold text-expired">Salir de la despensa</Text>
+            <Text className="text-[15px] font-semibold text-expired">
+              Salir de la despensa
+            </Text>
           </Pressable>
         <Pressable
           className="mt-3 rounded-2xl border border-expired/40 bg-expired/10 py-3.5 items-center active:opacity-70"
@@ -154,6 +157,71 @@ export default function SettingsScreen() {
         </Pressable>
         </View>
       </ScrollView>
+    {modalVisible && (
+      <View className="absolute inset-0 bg-black/40 items-center justify-center px-5">
+        <View className="w-full rounded-2xl bg-white dark:bg-[#1E1E1C] p-4">
+          
+          <Text className="text-[16px] font-semibold text-ink dark:text-[#F2F0EB] mb-3">
+            ¿De qué despensa quieres salir?
+          </Text>
+
+          {(pantries ?? []).map((p) => {
+            const selected = selectedPantry === p.id;
+
+            return (
+              <Pressable
+                key={p.id}
+                className={`flex-row items-center justify-between px-3 py-3 rounded-xl mb-2 ${
+                  selected ? 'bg-expired/10' : 'bg-stone dark:bg-[#2E2E2C]'
+                }`}
+                onPress={() => setSelectedPantry(p.id)}
+              >
+                <Text className="text-ink dark:text-[#F2F0EB] font-medium">
+                  {p.name}
+                </Text>
+
+                {selected && (
+                  <Ionicons name="checkmark-circle" size={18} color="#E76F51" />
+                )}
+              </Pressable>
+            );
+          })}
+
+          <View className="flex-row gap-2 mt-3">
+            <Pressable
+              className="flex-1 py-3 rounded-xl bg-stone dark:bg-[#2E2E2C] items-center"
+              onPress={() => {
+                setModalVisible(false);
+                setSelectedPantry(null);
+              }}
+            >
+              <Text className="text-pebble font-medium">Cancelar</Text>
+            </Pressable>
+
+              <Pressable
+                className="flex-1 py-3 rounded-xl bg-expired items-center"
+                onPress={async () => {
+                  if (!selectedPantry) return;
+
+                  try {
+                    await leavePantryMutation.mutateAsync(selectedPantry);
+
+                    setModalVisible(false);
+                    setSelectedPantry(null);
+                  } catch (error) {
+                    console.error('Error al salir de la despensa:', error);
+                  }
+                }}
+                disabled={!selectedPantry || leavePantryMutation.isPending}
+              >
+                <Text className="text-white font-semibold">
+                  {leavePantryMutation.isPending ? 'Saliendo...' : 'Confirmar'}
+                </Text>
+              </Pressable>
+          </View>
+        </View>
+      </View>
+    )}
     </SafeAreaView>
   );
 }

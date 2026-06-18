@@ -1,10 +1,9 @@
 import { BackButton } from '@/components/BackButton';
 import { TextField } from '@/components/TextField';
-import { usePantry } from '@/context/PantryContext';
 import { useCreatePantry } from '@/lib/api/pantries';
 import { pantryCreateSchema, type PantryCreateData } from '@/lib/validation';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { Ionicons } from '@expo/vector-icons';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -12,7 +11,6 @@ import { KeyboardAvoidingView, Platform, Pressable, Text, View } from 'react-nat
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function PantryCreateScreen() {
-  const { setActivePantry } = usePantry();
   const createPantry = useCreatePantry();
   const [step, setStep] = useState<'form' | 'success'>('form');
 
@@ -24,8 +22,7 @@ export default function PantryCreateScreen() {
 
   const onSubmit = async ({ name }: PantryCreateData) => {
     createPantry.mutate(name, {
-      onSuccess: async (pantry) => {
-        await setActivePantry(pantry.id, pantry.id_code);
+      onSuccess: async () => {
         setStep('success');
       },
     });

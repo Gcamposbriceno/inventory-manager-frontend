@@ -49,9 +49,10 @@ export default function TabLayout() {
       <Tabs.Screen name="index"    options={{ title: 'Inicio',   tabBarIcon: ({ focused }) => <TabIcon name="home"           focused={focused} /> }} />
       <Tabs.Screen name="despensa" options={{ title: 'Despensa', tabBarIcon: ({ focused }) => <TabIcon name="file-tray-full" focused={focused} /> }} />
       <Tabs.Screen name="recetas" options={{ title: 'Recetas', tabBarIcon: ({ focused }) => <TabIcon name="book" focused={focused} /> }} />
+      <Tabs.Screen name="planificador" options={{ title: 'Planificador', tabBarIcon: ({ focused }) => <TabIcon name="calendar"      focused={focused} /> }} />
       <Tabs.Screen name="lista"    options={{ title: 'Lista',    tabBarIcon: ({ focused }) => <TabIcon name="cart"           focused={focused} /> }} />
       <Tabs.Screen name="historial"options={{ title: 'Historial',tabBarIcon: ({ focused }) => <TabIcon name="time"           focused={focused} /> }} />
-      <Tabs.Screen name="settings" options={{ title: 'Ajustes',  tabBarIcon: ({ focused }) => <TabIcon name="settings"      focused={focused} /> }} />
+      <Tabs.Screen name="settings" options={{ href: null }} />
     </Tabs>
   );
 }
