@@ -1,8 +1,8 @@
+import { useThemeColors } from '@/hooks/useThemeColors';
 import { useAddPantryProduct, useAddPantryProductType, useUpdatePantryStock } from '@/lib/api/pantries';
 import { useProductTypeProducts, useProductTypes } from '@/lib/api/productTypes';
-import type { ProductType } from '@/types/productType';
 import type { Product } from '@/types/product';
-import { useThemeColors } from '@/hooks/useThemeColors';
+import type { ProductType } from '@/types/productType';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
@@ -359,7 +359,7 @@ export default function PantryAddTypeScreen() {
 
   const unitKey    = selectedType?.measurement_unit ?? 'un';
   const unitShort  = UNIT_SHORT[unitKey] ?? unitKey;
-  const unitLong   = UNIT_LONG[unitKey]  ?? unitKey;
+  //const unitLong   = UNIT_LONG[unitKey]  ?? unitKey;
   const stepSize   = STEP_SIZE[unitKey]  ?? 1;
   const dec        = DECIMALS[unitKey]   ?? 0;
 

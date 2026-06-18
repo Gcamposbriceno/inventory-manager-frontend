@@ -1,14 +1,12 @@
-import { useState } from 'react';
-import { ActivityIndicator, Image, Pressable, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { useThemeColors } from '@/hooks/useThemeColors';
-import { usePantry } from '@/context/PantryContext';
 import { usePantries, usePantryOverview, usePantryProducts, useRemovePantryProduct, useRemovePantryProductType, useUpdatePantryStock } from '@/lib/api/pantries';
 import { useProductTypeProducts } from '@/lib/api/productTypes';
 import type { PantryProduct, PantryTypeOverview } from '@/types/pantry';
-
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 // --- helpers ---
 
 type Status = 'empty' | 'low' | 'partial' | 'ok';
@@ -294,14 +292,20 @@ type Filter = 'all' | 'critical' | 'ok';
 
 export default function DespensaScreen() {
   const { warn } = useThemeColors();
-  const { pantryId } = usePantry();
-  const [selectedPantryId, setSelectedPantryId] = useState<string | null>(pantryId);
   const [filter, setFilter] = useState<Filter>('all');
   const [expandedTypeId, setExpandedTypeId] = useState<string | null>(null);
+  const { data: pantries, isLoading: pantriesLoading} = usePantries();
+  console.log(pantries, "patnries")
+  const [selectedPantryId, setSelectedPantryId] = useState<string | null>(null);
 
-  const { data: pantries, isLoading: pantriesLoading } = usePantries();
-  const { data: overview, isLoading: overviewLoading } = usePantryOverview(selectedPantryId ?? '');
-  const { data: pantryProducts } = usePantryProducts(selectedPantryId ?? '');
+  useEffect(() => {
+    if (!selectedPantryId && pantries?.length) {
+      setSelectedPantryId(pantries[0].id);
+    }
+  }, [pantries, selectedPantryId]);
+  
+  const { data: overview, isLoading: overviewLoading } = usePantryOverview(selectedPantryId!)
+  const { data: pantryProducts } = usePantryProducts(selectedPantryId!);
 
   const selectedPantryName = (pantries ?? []).find((p) => p.id === selectedPantryId)?.name ?? '';
 

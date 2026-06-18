@@ -1,3 +1,4 @@
+import { RecipeIngredient } from '@/types/recipe';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
@@ -10,6 +11,7 @@ export type PlannedMeal = {
   totalTimeMinutes: number;
   servings: number;
   porciones: number;
+  ingredientes: RecipeIngredient[];
 };
 
 export type WeekPlan = Record<DayKey, PlannedMeal[]>;
@@ -32,7 +34,7 @@ export function todayKey(): DayKey {
   return JS_DAY_TO_KEY[new Date().getDay()];
 }
 
-type RecipeLike = { id: string; name: string; total_time_minutes: number; servings: number };
+type RecipeLike = { id: string; name: string; total_time_minutes: number; servings: number, ingredients: RecipeIngredient[] };
 
 interface PlannerCtx {
   weekPlan: WeekPlan;
@@ -73,6 +75,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
       totalTimeMinutes: recipe.total_time_minutes,
       servings: recipe.servings,
       porciones: recipe.servings,
+      ingredientes: recipe.ingredients,
     };
     setWeekPlan((prev) => ({ ...prev, [day]: [...prev[day], meal] }));
   }, []);

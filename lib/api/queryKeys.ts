@@ -15,6 +15,7 @@ export const pantryKeys = {
   members:      (id: string) => ['pantries', id, 'members'] as const,
   products:     (id: string) => ['pantries', id, 'products'] as const,
   productTypes: (id: string) => ['pantries', id, 'productTypes'] as const,
+  list: () => [...pantryKeys.all(), 'list'] as const,
   overview:     (id: string) => ['pantries', id, 'overview'] as const,
   // kept for backwards-compat
   items:        (id: string) => ['pantries', id, 'items'] as const,

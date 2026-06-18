@@ -1,16 +1,13 @@
 import { BackButton } from '@/components/BackButton';
 import { TextField } from '@/components/TextField';
-import { usePantry } from '@/context/PantryContext';
 import { useJoinPantry } from '@/lib/api/pantries';
 import { pantryJoinSchema, type PantryJoinData } from '@/lib/validation';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { router } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAvoidingView, Platform, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function PantryJoinScreen() {
-  const { setActivePantry } = usePantry();
   const joinPantry = useJoinPantry();
 
   const {
@@ -19,13 +16,8 @@ export default function PantryJoinScreen() {
     formState: { errors },
   } = useForm<PantryJoinData>({ resolver: zodResolver(pantryJoinSchema) });
 
-  const onSubmit = async ({ code }: PantryJoinData) => {
-    joinPantry.mutate(code, {
-      onSuccess: async (pantry) => {
-        await setActivePantry(pantry.id, pantry.id_code);
-        router.replace('/(tabs)');
-      },
-    });
+  const onSubmit = ({ code }: PantryJoinData) => {
+    joinPantry.mutate(code);
   };
 
   return (

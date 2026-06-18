@@ -1,8 +1,8 @@
+import type { StockRowItem } from '@/components/StockRow';
+import { StockRow } from '@/components/StockRow';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { discountPct } from '@/lib/helpers/discountPct';
 import { greeting } from '@/lib/helpers/greeting';
-import { StockRow } from '@/components/StockRow';
-import type { StockRowItem } from '@/components/StockRow';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { type ComponentProps } from 'react';
@@ -82,9 +82,18 @@ export default function HomeScreen() {
                 {formattedDate()}
               </Text>
             </View>
-            <Pressable className="w-10 h-10 rounded-full bg-white dark:bg-[#1E1E1C] border border-stone dark:border-[#2E2E2C] items-center justify-center active:opacity-70">
-              <Ionicons name="notifications-outline" size={20} color={muted} />
-            </Pressable>
+            <View className="flex-row items-center gap-2">
+              <Pressable className="w-10 h-10 rounded-full bg-white dark:bg-[#1E1E1C] border border-stone dark:border-[#2E2E2C] items-center justify-center active:opacity-70">
+                <Ionicons name="notifications-outline" size={20} color={muted} />
+              </Pressable>
+
+              <Pressable
+                onPress={() => router.push('/settings')}
+                className="w-10 h-10 rounded-full bg-white dark:bg-[#1E1E1C] border border-stone dark:border-[#2E2E2C] items-center justify-center active:opacity-70"
+              >
+                <Ionicons name="settings-outline" size={20} color={muted} />
+              </Pressable>
+            </View>
           </View>
 
           {/* Alert strip */}
