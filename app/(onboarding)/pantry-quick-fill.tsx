@@ -1,42 +1,41 @@
-import { QUICK_FILL_PRODUCTS } from '@/constants/quickFillProducts';
-import { parseValidQty } from '@/lib/helpers/quantity';
-import type { PantryItem } from '@/types/pantry';
+import { usePantry } from '@/context/PantryContext';
+import { useQuickFillProductTypes } from '@/lib/api/productTypes';
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useNavigation } from 'expo-router';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Animated,
-  BackHandler,
-  Keyboard,
   PanResponder,
-  Platform,
   Pressable,
   Text,
-  TextInput,
   useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const QUEUE = QUICK_FILL_PRODUCTS;
 const SWIPE_THRESHOLD = 80;
+
+const UNIT_LABEL: Record<string, string> = {
+  kg: 'kilogramos',
+  l: 'litros',
+  ml: 'mililitros',
+  g: 'gramos',
+  un: 'unidades',
+};
 
 export default function PantryQuickFillScreen() {
   const { width: screenWidth } = useWindowDimensions();
   const navigation = useNavigation();
+  const { pantryId } = usePantry();
+  const { data: types, isLoading } = useQuickFillProductTypes();
+
   const [index, setIndex] = useState(0);
-  const [pantryItems, setPantryItems] = useState<PantryItem[]>([]);
-  const [showQuantity, setShowQuantity] = useState(false);
-  const [quantityDraft, setQuantityDraft] = useState('1');
 
   const pan = useRef(new Animated.ValueXY()).current;
-  const quantityPanelY = useRef(new Animated.Value(300)).current;
-  const cardBottomPadding = useRef(new Animated.Value(0)).current;
   const overlayOpacity = useRef(new Animated.Value(1)).current;
   const cardOpacity = useRef(new Animated.Value(1)).current;
-  const panelBottom = useRef(new Animated.Value(25)).current;
   const intentionalExit = useRef(false);
 
   const cardRotation = pan.x.interpolate({
@@ -61,54 +60,17 @@ export default function PantryQuickFillScreen() {
   const combinedYesOpacity = useRef(Animated.multiply(yesOpacity, overlayOpacity)).current;
   const combinedNoOpacity = useRef(Animated.multiply(noOpacity, overlayOpacity)).current;
 
-  useEffect(() => {
-    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-    const show = Keyboard.addListener(showEvent, (e) => {
-      Animated.timing(panelBottom, {
-        toValue: e.endCoordinates.height + 10,
-        duration: e.duration ?? 250,
-        useNativeDriver: false,
-      }).start();
-    });
-    const hide = Keyboard.addListener(hideEvent, (e) => {
-      Animated.timing(panelBottom, {
-        toValue: 25,
-        duration: e.duration ?? 200,
-        useNativeDriver: false,
-      }).start();
-    });
-    return () => {
-      show.remove();
-      hide.remove();
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Android hardware back button closes quantity panel instead of navigating back
-  useEffect(() => {
-    if (!showQuantity) return;
-    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      closeQuantityPanel();
-      return true;
-    });
-    return () => sub.remove();
-  }, [showQuantity]); // eslint-disable-line react-hooks/exhaustive-deps
+  const total = types?.length ?? 0;
+  const done = !isLoading && index >= total;
 
   // Intercept back navigation (Android gesture + iOS swipe) while filling is in progress
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (e) => {
-      if (index >= QUEUE.length || intentionalExit.current) return;
+      if (isLoading || done || intentionalExit.current) return;
       e.preventDefault();
-      if (showQuantity) {
-        // iOS: swipe-back while quantity panel is open → close panel instead
-        closeQuantityPanel();
-        return;
-      }
       Alert.alert(
         '¿Salir del llenado?',
-        pantryItems.length > 0
-          ? `Perderás ${pantryItems.length} producto${pantryItems.length !== 1 ? 's' : ''} que ya marcaste.`
-          : 'Si sales ahora perderás el progreso.',
+        'Si sales ahora terminarás el llenado rápido. Lo que ya agregaste queda guardado en tu despensa.',
         [
           { text: 'Seguir llenando', style: 'cancel' },
           {
@@ -123,7 +85,7 @@ export default function PantryQuickFillScreen() {
       );
     });
     return unsubscribe;
-  }, [navigation, showQuantity, index, pantryItems.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [navigation, isLoading, done]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -152,31 +114,10 @@ export default function PantryQuickFillScreen() {
       useNativeDriver: true,
     }).start(() => {
       if (direction === 'right') {
-        openQuantityPanel();
+        handleTengo();
       } else {
-        advanceCard([]);
+        advanceCard();
       }
-    });
-  }
-
-  function openQuantityPanel() {
-    setShowQuantity(true);
-    setQuantityDraft('1');
-    // Bring card back to center while panel slides up
-    Animated.parallel([
-      Animated.spring(pan, { toValue: { x: 0, y: 0 }, useNativeDriver: true }),
-      Animated.timing(quantityPanelY, { toValue: 0, duration: 280, useNativeDriver: true }),
-      Animated.timing(cardBottomPadding, { toValue: 280, duration: 280, useNativeDriver: false }),
-    ]).start();
-  }
-
-  function closeQuantityPanel(cb?: () => void) {
-    Animated.parallel([
-      Animated.timing(quantityPanelY, { toValue: 400, duration: 220, useNativeDriver: true }),
-      Animated.timing(cardBottomPadding, { toValue: 0, duration: 220, useNativeDriver: false }),
-    ]).start(() => {
-      setShowQuantity(false);
-      if (cb) cb();
     });
   }
 
@@ -188,60 +129,55 @@ export default function PantryQuickFillScreen() {
     overlayOpacity.setValue(1);
   }, [index]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function advanceCard(newItems: PantryItem[]) {
+  function advanceCard() {
     cardOpacity.setValue(0);
     overlayOpacity.setValue(0);
-    setPantryItems((prev) => [...prev, ...newItems]);
     setIndex((i) => i + 1);
   }
 
+  // "Sí tengo" → jump to the full add-type flow (thresholds → products) for this
+  // type, then resume the deck on the next card when we pop back. Advancing the
+  // index up front means a type the user backs out of is simply skipped.
+  function handleTengo() {
+    const type = types?.[index];
+    if (!type) return;
+    setIndex((i) => i + 1);
+    if (pantryId) {
+      router.push(`/pantry-add-type?pantryId=${pantryId}&typeId=${type.id}`);
+    }
+  }
+
   function handleYes() {
-    openQuantityPanel();
+    animateOut('right');
   }
 
   function handleNo() {
     animateOut('left');
   }
 
-  function getValidQty(): number {
-    return parseValidQty(quantityDraft);
-  }
-
-  function confirmQuantity(qty: number | null) {
-    const product = QUEUE[index];
-    const newItem: PantryItem = {
-      productId: product.id,
-      name: product.name,
-      emoji: product.emoji,
-      unit: product.unit,
-      category: product.category,
-      quantity: qty,
-    };
-    closeQuantityPanel(() => advanceCard([newItem]));
-  }
-
-  async function handleFinish(items: PantryItem[]) {
+  function handleFinish() {
     intentionalExit.current = true;
-    await AsyncStorage.setItem('@pantry_initial_items', JSON.stringify(items));
     router.replace('/(tabs)');
   }
 
   function handleSkip() {
-    Alert.alert(
-      '¿Entrar ahora?',
-      'Los productos que ya marcaste se guardarán.',
-      [
-        {
-          text: 'Sí, entrar',
-          onPress: () => handleFinish(pantryItems),
-        },
-        { text: 'Seguir llenando', style: 'cancel' },
-      ]
+    Alert.alert('¿Entrar ahora?', 'Lo que ya agregaste queda guardado en tu despensa.', [
+      { text: 'Sí, entrar', onPress: handleFinish },
+      { text: 'Seguir llenando', style: 'cancel' },
+    ]);
+  }
+
+  // ── Cargando ────────────────────────────────────────────────────────────────
+  if (isLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-cream dark:bg-[#161614] items-center justify-center">
+        <ActivityIndicator />
+      </SafeAreaView>
     );
   }
 
   // ── Pantalla de cierre ──────────────────────────────────────────────────────
-  if (index >= QUEUE.length) {
+  if (done) {
     return (
       <SafeAreaView className="flex-1 bg-cream dark:bg-[#161614] items-center justify-center px-6">
         <View className="bg-sage rounded-full p-5 mb-6">
@@ -251,11 +187,13 @@ export default function PantryQuickFillScreen() {
           ¡Listo!
         </Text>
         <Text className="text-[15px] text-pebble text-center mb-10">
-          Agregaste {pantryItems.length} producto{pantryItems.length !== 1 ? 's' : ''} a tu despensa.
+          {total === 0
+            ? 'Puedes agregar productos a tu despensa cuando quieras.'
+            : 'Tu despensa quedó lista. Puedes seguir agregando productos cuando quieras.'}
         </Text>
         <Pressable
           className="bg-sage rounded-xl py-5 px-10 items-center active:opacity-80"
-          onPress={() => handleFinish(pantryItems)}
+          onPress={handleFinish}
         >
           <Text className="text-white font-semibold text-base">Entrar a mi despensa</Text>
         </Pressable>
@@ -263,9 +201,8 @@ export default function PantryQuickFillScreen() {
     );
   }
 
-  const product = QUEUE[index];
-  const progress = index / QUEUE.length;
-  const validQty = getValidQty();
+  const type = types![index];
+  const progress = index / total;
 
   return (
     <SafeAreaView className="flex-1 bg-cream dark:bg-[#161614]">
@@ -279,18 +216,15 @@ export default function PantryQuickFillScreen() {
 
         {/* Barra de progreso */}
         <View className="h-1 bg-mist rounded-full overflow-hidden">
-          <View
-            className="h-full bg-sage rounded-full"
-            style={{ width: `${progress * 100}%` }}
-          />
+          <View className="h-full bg-sage rounded-full" style={{ width: `${progress * 100}%` }} />
         </View>
         <Text className="text-[12px] text-pebble text-center">
-          {index} de {QUEUE.length}
+          {index} de {total}
         </Text>
       </View>
 
       {/* ── Tarjeta ── */}
-      <Animated.View className="flex-1 justify-center" style={{ paddingBottom: cardBottomPadding }}>
+      <View className="flex-1 justify-center">
         <Animated.View
           style={{
             opacity: cardOpacity,
@@ -336,137 +270,64 @@ export default function PantryQuickFillScreen() {
               }}
             />
 
-            <Text style={{ fontSize: 64, marginBottom: 16 }}>{product.emoji}</Text>
+            <View className="w-20 h-20 rounded-3xl bg-mist dark:bg-[#0D2B1A] items-center justify-center mb-4">
+              <Ionicons name="cube-outline" size={40} color="#2D6A4F" />
+            </View>
             <Text className="text-[22px] font-semibold text-ink dark:text-[#F2F0EB] text-center mb-1">
-              {product.name}
+              {type.name}
             </Text>
             <Text className="text-[12px] text-pebble uppercase tracking-widest text-center">
-              {product.category}
+              {UNIT_LABEL[type.measurement_unit] ?? type.measurement_unit}
             </Text>
           </View>
         </Animated.View>
-      </Animated.View>
+      </View>
 
       {/* ── Indicador de swipe ── */}
-      {!showQuantity && (
-        <View className="h-12 items-center justify-center my-2">
-          <Animated.View
-            pointerEvents="none"
-            style={{
-              position: 'absolute',
-              opacity: combinedYesOpacity,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 6,
-            }}
-          >
-            <Text style={{ fontSize: 18 }}>✓</Text>
-            <Text className="text-sage font-semibold text-base">Tengo</Text>
-          </Animated.View>
-          <Animated.View
-            pointerEvents="none"
-            style={{
-              position: 'absolute',
-              opacity: combinedNoOpacity,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 6,
-            }}
-          >
-            <Text style={{ fontSize: 18 }}>✗</Text>
-            <Text className="text-expired font-semibold text-base">No tengo</Text>
-          </Animated.View>
-        </View>
-      )}
-
-      {/* ── Botones inferiores ── */}
-      {!showQuantity && (
-        <View className="flex-row gap-4 mx-6 mb-8">
-          <Pressable
-            className="flex-1 border border-stone rounded-2xl py-4 items-center active:opacity-70"
-            onPress={handleNo}
-          >
-            <Text className="text-pebble font-semibold">✗ No tengo</Text>
-          </Pressable>
-          <Pressable
-            className="flex-1 border border-sage rounded-2xl py-4 items-center active:opacity-70"
-            onPress={handleYes}
-          >
-            <Text className="text-sage font-semibold">✓ Sí tengo</Text>
-          </Pressable>
-        </View>
-      )}
-
-      {/* ── Panel de cantidad ── */}
-      {showQuantity && (
+      <View className="h-12 items-center justify-center my-2">
         <Animated.View
+          pointerEvents="none"
           style={{
             position: 'absolute',
-            bottom: panelBottom,
-            left: 0,
-            right: 0,
-            shadowColor: '#000',
-            shadowOpacity: 0.12,
-            shadowRadius: 20,
-            elevation: 10,
+            opacity: combinedYesOpacity,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
           }}
         >
-          <Animated.View
-            className="bg-white dark:bg-[#1E1E1C]"
-            style={{
-              transform: [{ translateY: quantityPanelY }],
-              borderTopLeftRadius: 24,
-              borderTopRightRadius: 24,
-            }}
-          >
-          <View style={{ paddingBottom: 40, paddingHorizontal: 24, paddingTop: 24 }}>
-            <Text className="text-[18px] font-semibold text-ink dark:text-[#F2F0EB] text-center mb-1">
-              ¿Cuánto tienes?
-            </Text>
-            <Text className="text-[13px] text-pebble text-center mb-6">{product.unit}</Text>
-
-            {/* Control numérico */}
-            <View className="flex-row items-center justify-center gap-6 mb-8">
-              <Pressable
-                className="w-11 h-11 bg-mint rounded-xl items-center justify-center active:opacity-60"
-                onPress={() => setQuantityDraft(String(Math.max(1, validQty - 1)))}
-              >
-                <Text className="text-[22px] text-ink dark:text-[#F2F0EB]">−</Text>
-              </Pressable>
-              <TextInput
-                value={quantityDraft}
-                onChangeText={(text) => {
-                  const clean = text.replace(/[^0-9]/g, '');
-                  setQuantityDraft(clean);
-                }}
-                onBlur={() => setQuantityDraft(String(validQty))}
-                keyboardType="number-pad"
-                selectTextOnFocus
-                className="text-[28px] font-semibold text-ink dark:text-[#F2F0EB] text-center"
-                style={{ minWidth: 48 }}
-              />
-              <Pressable
-                className="w-11 h-11 bg-mint rounded-xl items-center justify-center active:opacity-60"
-                onPress={() => setQuantityDraft(String(Math.min(99, validQty + 1)))}
-              >
-                <Text className="text-[22px] text-ink dark:text-[#F2F0EB]">+</Text>
-              </Pressable>
-            </View>
-
-            <Pressable
-              className="bg-sage rounded-xl py-3 items-center active:opacity-80 mb-4"
-              onPress={() => confirmQuantity(validQty)}
-            >
-              <Text className="text-white font-semibold text-base">Confirmar</Text>
-            </Pressable>
-
-            <Pressable onPress={() => confirmQuantity(null)} className="items-center active:opacity-60">
-              <Text className="text-[13px] text-pebble">Agregar sin cantidad</Text>
-            </Pressable>
-          </View>
-          </Animated.View>
+          <Text style={{ fontSize: 18 }}>✓</Text>
+          <Text className="text-sage font-semibold text-base">Tengo</Text>
         </Animated.View>
-      )}
+        <Animated.View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            opacity: combinedNoOpacity,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+          }}
+        >
+          <Text style={{ fontSize: 18 }}>✗</Text>
+          <Text className="text-expired font-semibold text-base">No tengo</Text>
+        </Animated.View>
+      </View>
+
+      {/* ── Botones inferiores ── */}
+      <View className="flex-row gap-4 mx-6 mb-8">
+        <Pressable
+          className="flex-1 border border-stone rounded-2xl py-4 items-center active:opacity-70"
+          onPress={handleNo}
+        >
+          <Text className="text-pebble font-semibold">✗ No tengo</Text>
+        </Pressable>
+        <Pressable
+          className="flex-1 border border-sage rounded-2xl py-4 items-center active:opacity-70"
+          onPress={handleYes}
+        >
+          <Text className="text-sage font-semibold">✓ Sí tengo</Text>
+        </Pressable>
+      </View>
     </SafeAreaView>
   );
 }

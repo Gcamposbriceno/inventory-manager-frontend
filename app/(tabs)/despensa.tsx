@@ -1,5 +1,12 @@
 import { useThemeColors } from '@/hooks/useThemeColors';
-import { usePantries, usePantryOverview, usePantryProducts, useRemovePantryProduct, useRemovePantryProductType, useUpdatePantryStock } from '@/lib/api/pantries';
+import {
+  usePantries,
+  usePantryOverview,
+  usePantryProducts,
+  useRemovePantryProduct,
+  useRemovePantryProductType,
+  useUpdatePantryStock,
+} from '@/lib/api/pantries';
 import { useProductTypeProducts } from '@/lib/api/productTypes';
 import type { PantryProduct, PantryTypeOverview } from '@/types/pantry';
 import { Ionicons } from '@expo/vector-icons';
@@ -30,7 +37,9 @@ function StatusBadge({ status }: { status: Status }) {
   if (status === 'low')
     return (
       <View className="px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950">
-        <Text className="text-[11px] font-medium text-amber-700 dark:text-amber-400">Bajo mín.</Text>
+        <Text className="text-[11px] font-medium text-amber-700 dark:text-amber-400">
+          Bajo mín.
+        </Text>
       </View>
     );
   if (status === 'partial')
@@ -63,14 +72,14 @@ function PantryTypeProducts({
   const { primary } = useThemeColors();
   const { data: typeProducts, isLoading } = useProductTypeProducts(typeName);
 
-  const removeProduct    = useRemovePantryProduct();
-  const updateStock      = useUpdatePantryStock();
-  const removeType       = useRemovePantryProductType();
+  const removeProduct = useRemovePantryProduct();
+  const updateStock = useUpdatePantryStock();
+  const removeType = useRemovePantryProductType();
   const [confirmRemove, setConfirmRemove] = useState(false);
 
   const pantrySkuSet = new Set(pantryProducts.map((p) => p.product_sku));
-  const stockBySku   = Object.fromEntries(pantryProducts.map((p) => [p.product_sku, p.stock]));
-  const inPantry     = (typeProducts ?? []).filter((p) => pantrySkuSet.has(p.sku));
+  const stockBySku = Object.fromEntries(pantryProducts.map((p) => [p.product_sku, p.stock]));
+  const inPantry = (typeProducts ?? []).filter((p) => pantrySkuSet.has(p.sku));
 
   return (
     <View className="border-t border-stone dark:border-[#2E2E2C] px-4 pt-3 pb-3.5 bg-stone/20 dark:bg-[#1A1A18]">
@@ -81,7 +90,7 @@ function PantryTypeProducts({
       )}
 
       {inPantry.map((p) => {
-        const stock      = stockBySku[p.sku] ?? 0;
+        const stock = stockBySku[p.sku] ?? 0;
         const isUpdating = updateStock.isPending && updateStock.variables?.sku === p.sku;
         const isRemoving = removeProduct.isPending && removeProduct.variables?.sku === p.sku;
 
@@ -90,7 +99,11 @@ function PantryTypeProducts({
             {/* Thumbnail */}
             <View className="w-9 h-9 rounded-lg bg-stone dark:bg-[#2E2E2C] overflow-hidden items-center justify-center flex-shrink-0">
               {p.image_url ? (
-                <Image source={{ uri: p.image_url }} style={{ width: 36, height: 36 }} resizeMode="contain" />
+                <Image
+                  source={{ uri: p.image_url }}
+                  style={{ width: 36, height: 36 }}
+                  resizeMode="contain"
+                />
               ) : (
                 <Ionicons name="cube-outline" size={16} color="#9E9B95" />
               )}
@@ -98,7 +111,10 @@ function PantryTypeProducts({
 
             {/* Name + brand */}
             <View className="flex-1">
-              <Text className="text-[13px] font-medium text-ink dark:text-[#F2F0EB]" numberOfLines={1}>
+              <Text
+                className="text-[13px] font-medium text-ink dark:text-[#F2F0EB]"
+                numberOfLines={1}
+              >
                 {p.name}
               </Text>
               <Text className="text-[11px] text-pebble">{p.brand}</Text>
@@ -111,14 +127,18 @@ function PantryTypeProducts({
                 disabled={isUpdating || stock === 0}
                 onPress={() => updateStock.mutate({ pantryId, sku: p.sku, stock: stock - 1 })}
               >
-                <Text className="text-[16px] font-light text-ink dark:text-[#F2F0EB] leading-none">−</Text>
+                <Text className="text-[16px] font-light text-ink dark:text-[#F2F0EB] leading-none">
+                  −
+                </Text>
               </Pressable>
 
               <View className="w-8 items-center">
                 {isUpdating ? (
                   <ActivityIndicator size="small" />
                 ) : (
-                  <Text className="text-[13px] font-bold text-ink dark:text-[#F2F0EB]">{stock}</Text>
+                  <Text className="text-[13px] font-bold text-ink dark:text-[#F2F0EB]">
+                    {stock}
+                  </Text>
                 )}
               </View>
 
@@ -127,7 +147,9 @@ function PantryTypeProducts({
                 disabled={isUpdating}
                 onPress={() => updateStock.mutate({ pantryId, sku: p.sku, stock: stock + 1 })}
               >
-                <Text className="text-[16px] font-light text-ink dark:text-[#F2F0EB] leading-none">+</Text>
+                <Text className="text-[16px] font-light text-ink dark:text-[#F2F0EB] leading-none">
+                  +
+                </Text>
               </Pressable>
             </View>
 
@@ -153,12 +175,14 @@ function PantryTypeProducts({
           className="flex-row items-center gap-1.5 active:opacity-70"
           onPress={() =>
             router.push(
-              `/pantry-add-product?pantryId=${pantryId}&pantryName=${encodeURIComponent(pantryName)}&typeName=${encodeURIComponent(typeName)}`,
+              `/pantry-add-product?pantryId=${pantryId}&pantryName=${encodeURIComponent(pantryName)}&typeName=${encodeURIComponent(typeName)}`
             )
           }
         >
           <Ionicons name="add-circle-outline" size={15} color={primary} />
-          <Text className="text-[13px] font-semibold text-forest dark:text-mint">Agregar producto</Text>
+          <Text className="text-[13px] font-semibold text-forest dark:text-mint">
+            Agregar producto
+          </Text>
         </Pressable>
 
         {confirmRemove ? (
@@ -221,10 +245,7 @@ function PantryTypeRow({
   const ratio = Math.min(row.current_stock / row.desired_stock, 1);
 
   const barColor =
-    status === 'empty'   ? expired :
-    status === 'low'     ? warn    :
-    status === 'partial' ? warn    :
-    primary;
+    status === 'empty' ? expired : status === 'low' ? warn : status === 'partial' ? warn : primary;
 
   const iconBgClass =
     status === 'ok' || status === 'partial'
@@ -254,11 +275,7 @@ function PantryTypeRow({
         </View>
         <View className="flex-row items-center gap-2">
           <StatusBadge status={status} />
-          <Ionicons
-            name={isExpanded ? 'chevron-up' : 'chevron-down'}
-            size={14}
-            color={muted}
-          />
+          <Ionicons name={isExpanded ? 'chevron-up' : 'chevron-down'} size={14} color={muted} />
         </View>
       </Pressable>
 
@@ -294,8 +311,8 @@ export default function DespensaScreen() {
   const { warn } = useThemeColors();
   const [filter, setFilter] = useState<Filter>('all');
   const [expandedTypeId, setExpandedTypeId] = useState<string | null>(null);
-  const { data: pantries, isLoading: pantriesLoading} = usePantries();
-  console.log(pantries, "patnries")
+  const { data: pantries, isLoading: pantriesLoading } = usePantries();
+  console.log(pantries, 'patnries');
   const [selectedPantryId, setSelectedPantryId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -303,21 +320,21 @@ export default function DespensaScreen() {
       setSelectedPantryId(pantries[0].id);
     }
   }, [pantries, selectedPantryId]);
-  
-  const { data: overview, isLoading: overviewLoading } = usePantryOverview(selectedPantryId!)
+
+  const { data: overview, isLoading: overviewLoading } = usePantryOverview(selectedPantryId!);
   const { data: pantryProducts } = usePantryProducts(selectedPantryId!);
 
   const selectedPantryName = (pantries ?? []).find((p) => p.id === selectedPantryId)?.name ?? '';
 
   const types = overview ?? [];
-  const emptyCount    = types.filter((r) => getStatus(r) === 'empty').length;
+  const emptyCount = types.filter((r) => getStatus(r) === 'empty').length;
   const criticalCount = types.filter((r) => ['empty', 'low'].includes(getStatus(r))).length;
-  const okCount       = types.filter((r) => ['partial', 'ok'].includes(getStatus(r))).length;
+  const okCount = types.filter((r) => ['partial', 'ok'].includes(getStatus(r))).length;
 
   const filtered = types.filter((r) => {
     const s = getStatus(r);
     if (filter === 'critical') return s === 'empty' || s === 'low';
-    if (filter === 'ok')       return s === 'partial' || s === 'ok';
+    if (filter === 'ok') return s === 'partial' || s === 'ok';
     return true;
   });
 
@@ -345,7 +362,7 @@ export default function DespensaScreen() {
               className="w-10 h-10 rounded-full bg-white dark:bg-[#1E1E1C] border border-stone dark:border-[#2E2E2C] items-center justify-center active:opacity-70"
               onPress={() =>
                 router.push(
-                  `/pantry-share?pantryId=${selectedPantryId}&pantryName=${encodeURIComponent(selectedPantryName)}`,
+                  `/pantry-share?pantryId=${selectedPantryId}&pantryName=${encodeURIComponent(selectedPantryName)}`
                 )
               }
             >
@@ -440,11 +457,9 @@ export default function DespensaScreen() {
                 <View className="flex-1 flex-row items-center gap-2 px-3 py-3">
                   <Ionicons name="warning-outline" size={15} color={warn} />
                   <Text className="flex-1 text-[13px] font-semibold text-amber-700 dark:text-amber-300">
-                    {criticalCount}{' '}
-                    {criticalCount === 1 ? 'producto bajo' : 'productos bajo'} el mínimo
-                    {emptyCount > 0
-                      ? `, ${emptyCount} agotado${emptyCount > 1 ? 's' : ''}`
-                      : ''}
+                    {criticalCount} {criticalCount === 1 ? 'producto bajo' : 'productos bajo'} el
+                    mínimo
+                    {emptyCount > 0 ? `, ${emptyCount} agotado${emptyCount > 1 ? 's' : ''}` : ''}
                   </Text>
                   <Ionicons name="chevron-forward" size={14} color={warn} />
                 </View>
@@ -455,9 +470,9 @@ export default function DespensaScreen() {
             <View className="mx-5 flex-row bg-stone dark:bg-[#1E1E1C] rounded-xl p-1 mb-5">
               {(
                 [
-                  { key: 'all',      label: 'Todos',    count: types.length },
+                  { key: 'all', label: 'Todos', count: types.length },
                   { key: 'critical', label: 'Críticos', count: criticalCount },
-                  { key: 'ok',       label: 'OK',       count: okCount },
+                  { key: 'ok', label: 'OK', count: okCount },
                 ] as { key: Filter; label: string; count: number }[]
               ).map((tab) => (
                 <Pressable
@@ -528,7 +543,11 @@ export default function DespensaScreen() {
             shadowRadius: 8,
             shadowOffset: { width: 0, height: 3 },
           }}
-          onPress={() => router.push(`/pantry-add-type?pantryId=${selectedPantryId}&pantryName=${encodeURIComponent(selectedPantryName)}`)}
+          onPress={() =>
+            router.push(
+              `/pantry-add-type?pantryId=${selectedPantryId}&pantryName=${encodeURIComponent(selectedPantryName)}`
+            )
+          }
         >
           <Ionicons name="add" size={28} color="#F2F0EB" />
         </Pressable>
