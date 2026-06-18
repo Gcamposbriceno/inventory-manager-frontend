@@ -1,7 +1,8 @@
 export const productTypeKeys = {
-  all:      () => ['productTypes'] as const,
-  detail:   (id: string) => ['productTypes', id] as const,
-  products: (name: string) => ['productTypes', name, 'products'] as const,
+  all:       () => ['productTypes'] as const,
+  detail:    (id: string) => ['productTypes', id] as const,
+  products:  (name: string) => ['productTypes', name, 'products'] as const,
+  quickFill: () => ['productTypes', 'quick-fill'] as const,
 };
 
 export const productKeys = {

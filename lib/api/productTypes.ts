@@ -12,6 +12,14 @@ export function useProductTypes() {
   });
 }
 
+export function useQuickFillProductTypes() {
+  const apiFetch = useApiFetch();
+  return useQuery<ProductType[]>({
+    queryKey: productTypeKeys.quickFill(),
+    queryFn: () => apiFetch('/product_types/quick-fill'),
+  });
+}
+
 export function useProductType(id: string) {
   const apiFetch = useApiFetch();
   return useQuery<ProductType>({

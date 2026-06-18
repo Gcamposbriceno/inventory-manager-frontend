@@ -9,7 +9,7 @@ import type { Product } from '@/types/product';
 import type { ProductType } from '@/types/productType';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -372,10 +372,16 @@ function ProductsStep({
 // ── main screen ───────────────────────────────────────────────────────────────
 
 export default function PantryAddTypeScreen() {
-  const { pantryId, pantryName } = useLocalSearchParams<{ pantryId: string; pantryName: string }>();
+  const { pantryId, pantryName, typeId } = useLocalSearchParams<{
+    pantryId: string;
+    pantryName: string;
+    typeId?: string;
+  }>();
   const { muted } = useThemeColors();
 
-  const [step, setStep] = useState<Step>('search');
+  // When launched from onboarding quick-fill a type is preselected, so we skip the
+  // search step and go straight to thresholds, then products.
+  const [step, setStep] = useState<Step>(typeId ? 'configure' : 'search');
   const [selectedType, setSelectedType] = useState<ProductType | null>(null);
   const [search, setSearch] = useState('');
   const [rop, setRop] = useState(0);
@@ -402,6 +408,14 @@ export default function PantryAddTypeScreen() {
     t.name.toLowerCase().includes(search.toLowerCase())
   );
 
+  // Resolve the preselected type (from quick-fill) once the type list has loaded.
+  useEffect(() => {
+    if (typeId && !selectedType && allTypes) {
+      const preselected = allTypes.find((t) => t.id === typeId);
+      if (preselected) setSelectedType(preselected);
+    }
+  }, [typeId, selectedType, allTypes]);
+
   function selectType(type: ProductType) {
     setSelectedType(type);
     setRop(0);
@@ -409,8 +423,10 @@ export default function PantryAddTypeScreen() {
     setStep('configure');
   }
 
+  // With a preselected type there is no search step to return to — pop back instead.
   function backToSearch() {
-    setStep('search');
+    if (typeId) router.back();
+    else setStep('search');
   }
 
   function adjustRop(delta: number) {
@@ -459,6 +475,18 @@ export default function PantryAddTypeScreen() {
       setSubmitError(msg);
       setIsSubmitting(false);
     }
+  }
+
+  // ── preselected type still resolving (launched from quick-fill) ─────────────
+  if (typeId && !selectedType) {
+    return (
+      <SafeAreaView
+        className="flex-1 bg-cream dark:bg-[#161614] items-center justify-center"
+        edges={['top']}
+      >
+        <ActivityIndicator />
+      </SafeAreaView>
+    );
   }
 
   // ── step 3 ────────────────────────────────────────────────────────────────
