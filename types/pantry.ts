@@ -26,7 +26,7 @@ export interface Pantry {
 export interface PantryMember {
   user_id: string;
   nickname: string;
-  role: string;
+  is_admin: boolean;
 }
 
 export interface PantryProduct {
