@@ -1,5 +1,5 @@
 import { useApiFetch } from '@/hooks/useApiFetch';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ProductType, CreateProductTypeData, UpdateProductTypeData } from '@/types/productType';
 import type { Product } from '@/types/product';
 import { productTypeKeys, productKeys } from './queryKeys';
@@ -12,12 +12,31 @@ export function useProductTypes() {
   });
 }
 
+export function useQuickFillProductTypes() {
+  const apiFetch = useApiFetch();
+  return useQuery<ProductType[]>({
+    queryKey: productTypeKeys.quickFill(),
+    queryFn: () => apiFetch('/product_types/quick-fill'),
+  });
+}
+
 export function useProductType(id: string) {
   const apiFetch = useApiFetch();
   return useQuery<ProductType>({
     queryKey: productTypeKeys.detail(id),
     queryFn: () => apiFetch(`/product_types/${id}`),
     enabled: !!id,
+  });
+}
+
+export function useProductsForTypes(names: string[]) {
+  const apiFetch = useApiFetch();
+  return useQueries({
+    queries: names.map((name) => ({
+      queryKey: productTypeKeys.products(name),
+      queryFn: () => apiFetch<Product[]>(`/product_types/${encodeURIComponent(name)}/products`),
+      enabled: !!name,
+    })),
   });
 }
 

@@ -4,6 +4,7 @@ export interface ProductType {
   id: string;
   name: string;
   measurement_unit: MeasurementUnit;
+  is_quick_fill?: boolean;
 }
 
 export interface CreateProductTypeData {

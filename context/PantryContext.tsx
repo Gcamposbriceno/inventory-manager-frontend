@@ -1,52 +1,33 @@
-import { usePersistedState } from '@/hooks/usePersistedState';
-import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react';
+import { createContext, useContext, useState } from 'react';
 
-type PantryId = string | null;
-
-interface PantryCtx {
-  pantryId: PantryId;
-  pantryIdCode: string | null;
-  hasPantry: boolean;
-  isHydrated: boolean;
-  setActivePantry: (id: string, id_code: string) => Promise<void>;
-  clearPantry: () => Promise<void>;
+interface PantryContextType {
+  activePantryId: string | null;
+  setActivePantryId: (id: string | null) => void;
 }
 
-const Context = createContext<PantryCtx | null>(null);
+const PantryContext = createContext<PantryContextType | null>(null);
 
-export function PantryProvider({ children }: { children: ReactNode }) {
-  const [pantryId, persistPantryId, isHydrated] = usePersistedState<PantryId>(
-    '@pantry_membership_id',
-    null,
+export function PantryProvider({ children }: { children: React.ReactNode }) {
+  const [activePantryId, setActivePantryId] = useState<string | null>(null);
+
+  return (
+    <PantryContext.Provider
+      value={{
+        activePantryId,
+        setActivePantryId,
+      }}
+    >
+      {children}
+    </PantryContext.Provider>
   );
-  const [pantryIdCode, persistPantryIdCode] = usePersistedState<string | null>(
-    '@pantry_id_code',
-    null,
-  );
-
-  const setActivePantry = useCallback(
-    async (id: string, id_code: string) => {
-      await persistPantryId(id);
-      await persistPantryIdCode(id_code);
-    },
-    [persistPantryId, persistPantryIdCode],
-  );
-
-  const clearPantry = useCallback(async () => {
-    await persistPantryId(null);
-    await persistPantryIdCode(null);
-  }, [persistPantryId, persistPantryIdCode]);
-
-  const value = useMemo(
-    () => ({ pantryId, pantryIdCode, hasPantry: !!pantryId, isHydrated, setActivePantry, clearPantry }),
-    [isHydrated, pantryId, pantryIdCode, setActivePantry, clearPantry],
-  );
-
-  return <Context.Provider value={value}>{children}</Context.Provider>;
 }
 
-export function usePantry() {
-  const ctx = useContext(Context);
-  if (!ctx) throw new Error('usePantry requires PantryProvider');
-  return ctx;
+export function usePantryContext() {
+  const context = useContext(PantryContext);
+
+  if (!context) {
+    throw new Error('usePantryContext must be used inside PantryProvider');
+  }
+
+  return context;
 }

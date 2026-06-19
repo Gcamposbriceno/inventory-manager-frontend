@@ -1,10 +1,9 @@
 import { BackButton } from '@/components/BackButton';
 import { TextField } from '@/components/TextField';
-import { usePantry } from '@/context/PantryContext';
 import { useCreatePantry } from '@/lib/api/pantries';
 import { pantryCreateSchema, type PantryCreateData } from '@/lib/validation';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { Ionicons } from '@expo/vector-icons';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -12,10 +11,9 @@ import { KeyboardAvoidingView, Platform, Pressable, Text, View } from 'react-nat
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function PantryCreateScreen() {
-  const { setActivePantry } = usePantry();
   const createPantry = useCreatePantry();
   const [step, setStep] = useState<'form' | 'success'>('form');
-
+  const [createdPantryId, setCreatedPantryId] = useState<string | null>(null);
   const {
     control,
     handleSubmit,
@@ -24,8 +22,8 @@ export default function PantryCreateScreen() {
 
   const onSubmit = async ({ name }: PantryCreateData) => {
     createPantry.mutate(name, {
-      onSuccess: async (pantry) => {
-        await setActivePantry(pantry.id, pantry.id_code);
+      onSuccess: (pantry) => {
+        setCreatedPantryId(pantry.id);
         setStep('success');
       },
     });
@@ -53,7 +51,14 @@ export default function PantryCreateScreen() {
           <View className="gap-3">
             <Pressable
               className="bg-sage rounded-xl py-5 items-center active:opacity-80"
-              onPress={() => router.push('/(onboarding)/pantry-quick-fill')}
+              onPress={() =>
+                router.push({
+                  pathname: '/(onboarding)/pantry-quick-fill',
+                  params: {
+                    pantryId: createdPantryId!,
+                  },
+                })
+              }
             >
               <Text className="text-white font-semibold text-base">Llenar mi despensa ahora</Text>
             </Pressable>
