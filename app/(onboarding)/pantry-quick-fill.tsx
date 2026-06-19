@@ -1,7 +1,7 @@
 import { usePantryContext } from '@/context/PantryContext';
 import { useQuickFillProductTypes } from '@/lib/api/productTypes';
 import { Ionicons } from '@expo/vector-icons';
-import { router, useNavigation } from 'expo-router';
+import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
