@@ -6,7 +6,7 @@ import type { Pantry } from '@/types/pantry';
 import { useClerk } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
 import { useState, type ComponentProps } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -40,8 +40,17 @@ export default function SettingsScreen() {
   const { primary, muted } = useThemeColors();
   const { mode, setMode } = useTheme();
   const { signOut } = useClerk();
-  const handleSignOut = async () => {
-    await signOut();
+  const handleSignOut = () => {
+    Alert.alert('Cerrar sesión', '¿Seguro que quieres cerrar sesión?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Cerrar sesión',
+        style: 'destructive',
+        onPress: async () => {
+          await signOut();
+        },
+      },
+    ]);
   };
   return (
     <SafeAreaView className="flex-1 bg-cream dark:bg-[#161614]" edges={['top']}>
