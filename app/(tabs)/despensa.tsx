@@ -439,7 +439,7 @@ export default function DespensaScreen() {
                 <Text className="text-[28px] font-semibold leading-none text-amber-600 dark:text-amber-400">
                   {criticalCount}
                 </Text>
-                <Text className="text-[11px] font-medium text-pebble">Bajo mínimo</Text>
+                <Text className="text-[11px] font-medium text-pebble">Por reponer</Text>
               </View>
               <View className="w-px h-9 bg-stone dark:bg-[#2E2E2C]" />
               <View className="flex-1 items-center gap-1">
