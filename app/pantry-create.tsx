@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function PantryCreateScreen() {
   const createPantry = useCreatePantry();
   const [step, setStep] = useState<'form' | 'success'>('form');
-
+  const [createdPantryId, setCreatedPantryId] = useState<string | null>(null);
   const {
     control,
     handleSubmit,
@@ -22,7 +22,8 @@ export default function PantryCreateScreen() {
 
   const onSubmit = async ({ name }: PantryCreateData) => {
     createPantry.mutate(name, {
-      onSuccess: async () => {
+      onSuccess: (pantry) => {
+        setCreatedPantryId(pantry.id);
         setStep('success');
       },
     });
@@ -50,7 +51,14 @@ export default function PantryCreateScreen() {
           <View className="gap-3">
             <Pressable
               className="bg-sage rounded-xl py-5 items-center active:opacity-80"
-              onPress={() => router.push('/(onboarding)/pantry-quick-fill')}
+              onPress={() =>
+                router.push({
+                  pathname: '/(onboarding)/pantry-quick-fill',
+                  params: {
+                    pantryId: createdPantryId!,
+                  },
+                })
+              }
             >
               <Text className="text-white font-semibold text-base">Llenar mi despensa ahora</Text>
             </Pressable>
