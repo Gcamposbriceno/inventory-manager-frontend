@@ -1,4 +1,5 @@
 import { BackButton } from '@/components/BackButton';
+import { todayKey, usePlanner } from '@/context/PlannerContext';
 import { useProduct } from '@/lib/api/products';
 import { useProductTypes } from '@/lib/api/productTypes';
 import { useCreateRecipe, useRecipe } from '@/lib/api/recipes';
@@ -7,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useThemeColors } from '@/hooks/useThemeColors';
 
 type Props = {
   mode: 'mine' | 'public';
@@ -52,10 +54,12 @@ function IngredientRow({
 }
 
 export function RecipeDetail({ mode }: Props) {
+  const colors = useThemeColors();
   const { id } = useLocalSearchParams();
   const { data: productTypes = [] } = useProductTypes();
   const createRecipe = useCreateRecipe();
   const { userId } = useAuth();
+  const { addRecipeToDay } = usePlanner();
 
   const typeNames = Object.fromEntries(
     productTypes.map((type) => [type.id, type.name])
@@ -111,7 +115,7 @@ export function RecipeDetail({ mode }: Props) {
             <Ionicons
               name="restaurant-outline"
               size={56}
-              color="#2D6A4F"
+              color={colors.sage}
             />
           </View>
 
@@ -124,7 +128,7 @@ export function RecipeDetail({ mode }: Props) {
               <Ionicons
                 name="time-outline"
                 size={16}
-                color="#9E9B95"
+                color={colors.muted}
               />
               <Text className="text-ink dark:text-[#F2F0EB]">
                 {recipe.total_time_minutes}
@@ -135,7 +139,7 @@ export function RecipeDetail({ mode }: Props) {
               <Ionicons
                 name="people-outline"
                 size={16}
-                color="#9E9B95"
+                color={colors.muted}
               />
               <Text className="text-ink dark:text-[#F2F0EB]">
                 {recipe.servings}
@@ -203,11 +207,24 @@ export function RecipeDetail({ mode }: Props) {
                     : 'copy-outline'
               }
               size={18}
-              color="#2D6A4F"
+              color={colors.sage}
             />
 
             <Text className="text-[14px] font-semibold text-forest dark:text-mint">
               {actionLabel}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => {
+              addRecipeToDay(todayKey(), recipe);
+              router.push('/planificador');
+            }}
+            className="flex-row items-center justify-center gap-2 rounded-xl bg-mist dark:bg-[#0D2B1A] py-3 mb-6 active:opacity-80 active:scale-[0.98]"
+          >
+            <Ionicons name="calendar-outline" size={18} color="#2D6A4F" />
+            <Text className="text-[14px] font-semibold text-forest dark:text-mint">
+              Agregar a semana
             </Text>
           </Pressable>
 

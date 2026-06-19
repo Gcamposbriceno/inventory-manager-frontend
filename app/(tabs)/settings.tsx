@@ -1,12 +1,13 @@
-import { usePantry } from '@/context/PantryContext';
+import { LeavePantryModal } from '@/components/LeavePantryModal';
 import { useTheme, type ThemeMode } from '@/context/ThemeContext';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { usePantries } from '@/lib/api/pantries';
+import type { Pantry } from '@/types/pantry';
 import { useClerk } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
-import { type ComponentProps } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { useState, type ComponentProps } from 'react';
+import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
 const THEME_OPTIONS: { value: ThemeMode; label: string; description: string; icon: IconName }[] = [
@@ -30,22 +31,26 @@ const THEME_OPTIONS: { value: ThemeMode; label: string; description: string; ico
   },
 ];
 
-const MEMBERS = [
-  'Gabriel Campos',
-  'Joaquín Fuentealba',
-  'Arturo Herreros',
-  'Anaís Neira',
-  'Luc Olhabe',
-];
-
 export default function SettingsScreen() {
+  const { data: pantries } = usePantries();
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedPantry, setSelectedPantry] = useState<string | null>(null);
+  const [leavingPantry, setLeavingPantry] = useState<Pantry | null>(null);
   const { primary, muted } = useThemeColors();
   const { mode, setMode } = useTheme();
-  const { clearPantry } = usePantry();
   const { signOut } = useClerk();
-
-  const handleSignOut = async () => {
-    await signOut();
+  const handleSignOut = () => {
+    Alert.alert('Cerrar sesión', '¿Seguro que quieres cerrar sesión?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Cerrar sesión',
+        style: 'destructive',
+        onPress: async () => {
+          await signOut();
+        },
+      },
+    ]);
   };
   return (
     <SafeAreaView className="flex-1 bg-cream dark:bg-[#161614]" edges={['top']}>
@@ -71,11 +76,7 @@ export default function SettingsScreen() {
                   <View
                     className={`w-9 h-9 rounded-xl items-center justify-center ${selected ? 'bg-mist dark:bg-[#0D2B1A]' : 'bg-stone dark:bg-[#2E2E2C]'}`}
                   >
-                    <Ionicons
-                      name={opt.icon}
-                      size={18}
-                      color={selected ? primary : muted}
-                    />
+                    <Ionicons name={opt.icon} size={18} color={selected ? primary : muted} />
                   </View>
                   <View className="flex-1">
                     <Text className="text-[15px] font-medium text-ink dark:text-[#F2F0EB]">
@@ -118,42 +119,76 @@ export default function SettingsScreen() {
             ))}
           </View>
 
-          {/* Integrantes */}
-          <Text className="text-[11px] font-medium tracking-wide uppercase text-pebble mb-2">
-            Integrantes
-          </Text>
-          <View className="rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] overflow-hidden">
-            {MEMBERS.map((name, i) => (
-              <View
-                key={name}
-                className={`flex-row items-center gap-3 px-4 py-3 ${i < MEMBERS.length - 1 ? 'border-b border-stone/60 dark:border-[#2E2E2C]' : ''}`}
-              >
-                <View className="w-8 h-8 rounded-full bg-mist dark:bg-[#0D2B1A] items-center justify-center">
-                  <Text className="text-[13px] font-bold text-forest dark:text-mint">
-                    {name.charAt(0)}
-                  </Text>
-                </View>
-                <Text className="text-[15px] font-medium text-ink dark:text-[#F2F0EB]">{name}</Text>
-              </View>
-            ))}
-          </View>
-
           <Pressable
             className="mt-6 rounded-2xl border border-expired/40 bg-expired/10 py-3.5 items-center active:opacity-70"
-            onPress={clearPantry}
+            onPress={() => setModalVisible(true)}
           >
-            <Text className="text-[15px] font-semibold text-expired">Salir de la despensa</Text>
+            <Text className="text-[15px] font-semibold text-expired">Salir de despensa</Text>
           </Pressable>
-        <Pressable
-          className="mt-3 rounded-2xl border border-expired/40 bg-expired/10 py-3.5 items-center active:opacity-70"
-          onPress={handleSignOut}
-        >
-          <Text className="text-[15px] font-semibold text-expired">
-            Cerrar sesión
-          </Text>
-        </Pressable>
+          <Pressable
+            className="mt-3 rounded-2xl border border-expired/40 bg-expired/10 py-3.5 items-center active:opacity-70"
+            onPress={handleSignOut}
+          >
+            <Text className="text-[15px] font-semibold text-expired">Cerrar sesión</Text>
+          </Pressable>
         </View>
       </ScrollView>
+      {modalVisible && (
+        <View className="absolute inset-0 bg-black/40 items-center justify-center px-5">
+          <View className="w-full rounded-2xl bg-white dark:bg-[#1E1E1C] p-4">
+            <Text className="text-[16px] font-semibold text-ink dark:text-[#F2F0EB] mb-3">
+              ¿De qué despensa quieres salir?
+            </Text>
+
+            {(pantries ?? []).map((p) => {
+              const selected = selectedPantry === p.id;
+
+              return (
+                <Pressable
+                  key={p.id}
+                  className={`flex-row items-center justify-between px-3 py-3 rounded-xl mb-2 ${
+                    selected ? 'bg-expired/10' : 'bg-stone dark:bg-[#2E2E2C]'
+                  }`}
+                  onPress={() => setSelectedPantry(p.id)}
+                >
+                  <Text className="text-ink dark:text-[#F2F0EB] font-medium">{p.name}</Text>
+
+                  {selected && <Ionicons name="checkmark-circle" size={18} color="#E76F51" />}
+                </Pressable>
+              );
+            })}
+
+            <View className="flex-row gap-2 mt-3">
+              <Pressable
+                className="flex-1 py-3 rounded-xl bg-stone dark:bg-[#2E2E2C] items-center"
+                onPress={() => {
+                  setModalVisible(false);
+                  setSelectedPantry(null);
+                }}
+              >
+                <Text className="text-pebble font-medium">Cancelar</Text>
+              </Pressable>
+
+              <Pressable
+                className="flex-1 py-3 rounded-xl bg-expired items-center"
+                onPress={() => {
+                  const pantry = (pantries ?? []).find((p) => p.id === selectedPantry);
+                  if (!pantry) return;
+                  setModalVisible(false);
+                  setSelectedPantry(null);
+                  setLeavingPantry(pantry);
+                }}
+                disabled={!selectedPantry}
+              >
+                <Text className="text-white font-semibold">Continuar</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      )}
+      {leavingPantry && (
+        <LeavePantryModal pantry={leavingPantry} onClose={() => setLeavingPantry(null)} />
+      )}
     </SafeAreaView>
   );
 }

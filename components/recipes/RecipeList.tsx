@@ -46,7 +46,7 @@ export function RecipeList({ mode }: Props) {
             onPress={() => router.push('/recetas/publicas')}
             className="flex-row items-center justify-center gap-2 rounded-xl bg-forest py-3 mb-4 active:opacity-80 active:scale-[0.98]"
           >
-            <Ionicons name="search-outline" size={18} color="#F8F7F4" />
+            <Ionicons name="search-outline" size={18} color={colors.cream} />
             <Text className="text-[15px] font-semibold text-cream">Explorar recetas</Text>
           </Pressable>
         ) : (
@@ -54,7 +54,7 @@ export function RecipeList({ mode }: Props) {
             onPress={() => router.replace('/recetas')}
             className="flex-row items-center justify-center gap-2 rounded-xl bg-forest py-3 mb-4 active:opacity-80 active:scale-[0.98]"
           >
-            <Ionicons name="arrow-back-outline" size={18} color="#F8F7F4" />
+            <Ionicons name="arrow-back-outline" size={18} color={colors.cream} />
             <Text className="text-[15px] font-semibold text-cream">Volver a Mis Recetas</Text>
           </Pressable>
         )}
@@ -62,19 +62,19 @@ export function RecipeList({ mode }: Props) {
           onPress={() => router.push('/recetas/crear')}
           className="flex-row items-center justify-center gap-2 rounded-xl bg-forest py-3 mb-4 active:opacity-80 active:scale-[0.98]"
         >
-          <Ionicons name="add-outline" size={18} color="#F8F7F4" />
+          <Ionicons name="add-outline" size={18} color={colors.cream} />
           <Text className="text-[15px] font-semibold text-cream">
             Crear receta
           </Text>
         </Pressable>
 
         <View className="flex-row items-center rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] px-4 py-3 mb-6">
-          <Ionicons name="search-outline" size={18} color="#9E9B95" />
+          <Ionicons name="search-outline" size={18} color={colors.muted} />
           <TextInput
             value={search}
             onChangeText={setSearch}
             placeholder="Buscar por nombre..."
-            placeholderTextColor="#9E9B95"
+            placeholderTextColor={colors.muted}
             className="flex-1 ml-2 text-[14px] text-ink dark:text-[#F2F0EB]"
           />
         </View>
@@ -90,12 +90,12 @@ export function RecipeList({ mode }: Props) {
           <ActivityIndicator color={colors.primary} className="mt-10" />
         ) : isError && mode === 'public' ? (
           <View className="flex-1 items-center justify-center gap-3 py-12">
-            <Ionicons name="cloud-offline-outline" size={48} color="#9E9B95" />
+            <Ionicons name="cloud-offline-outline" size={48} color={colors.muted} />
             <Text className="text-[15px] text-pebble text-center">No se pudieron cargar las recetas</Text>
           </View>
         ) : filtered.length === 0 ? (
           <View className="flex-1 items-center justify-center gap-3 py-12">
-            <Ionicons name="restaurant-outline" size={48} color="#9E9B95" />
+            <Ionicons name="restaurant-outline" size={48} color={colors.muted} />
             <Text className="text-[15px] text-pebble text-center">No se encontraron recetas</Text>
           </View>
         ) : (

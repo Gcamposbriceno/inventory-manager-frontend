@@ -7,15 +7,30 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "channel": "development"
+      "channel": "development",
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://inventory-manager-backend-zd9h.onrender.com/",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_bW92aW5nLWhvbmV5YmVlLTkzLmNsZXJrLmFjY291bnRzLmRldiQ"
+      }
     },
     "preview": {
       "distribution": "internal",
-      "channel": "preview"
+      "channel": "preview",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://inventory-manager-backend-zd9h.onrender.com/",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_bW92aW5nLWhvbmV5YmVlLTkzLmNsZXJrLmFjY291bnRzLmRldiQ"
+      }
     },
     "production": {
       "autoIncrement": true,
-      "channel": "production"
+      "channel": "production",
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://inventory-manager-backend-zd9h.onrender.com/",
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_bW92aW5nLWhvbmV5YmVlLTkzLmNsZXJrLmFjY291bnRzLmRldiQ"
+      }
     }
   },
   "submit": {

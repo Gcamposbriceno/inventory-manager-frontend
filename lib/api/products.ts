@@ -20,6 +20,15 @@ export function useProduct(sku: string) {
   });
 }
 
+export function useProductByEan(ean: string) {
+  const apiFetch = useApiFetch();
+  return useQuery<Product>({
+    queryKey: productKeys.byEan(ean),
+    queryFn: () => apiFetch(`/products/by-ean/${ean}`),
+    enabled: !!ean,
+  });
+}
+
 export function useCreateProduct() {
   const apiFetch = useApiFetch();
   const queryClient = useQueryClient();

@@ -3,7 +3,6 @@ import { TextField } from '@/components/TextField';
 import { registerSchema, type RegisterData } from '@/lib/validation';
 import { useSignUp } from '@clerk/clerk-expo';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { router } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { KeyboardAvoidingView, Platform, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -32,7 +31,6 @@ export default function RegisterScreen() {
 
       if (result.status === 'complete') {
         await setActive({ session: result.createdSessionId });
-        router.replace('/pantry-setup');
       } else {
         alert('Se requiere verificación adicional. Revisa tu correo electrónico.');
       }
