@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useThemeColors } from '@/hooks/useThemeColors';
 
 
 type Props = {
@@ -23,6 +24,7 @@ export function RecipeForm({
   isLoading = false,
   onSubmit,
 }: Props) {
+  const colors = useThemeColors();
   const { data: productTypes = [] } = useProductTypes();
 
   const [name, setName] = useState(
@@ -147,7 +149,7 @@ export function RecipeForm({
             onPress={() => router.back()}
             className="flex-row items-center gap-2"
           >
-            <Ionicons name="arrow-back-outline" size={22} color="#2D2B27" />
+            <Ionicons name="arrow-back-outline" size={22} color={colors.ink} />
             <Text className="text-[15px] font-semibold text-ink">
               Volver
             </Text>
@@ -436,7 +438,7 @@ export function RecipeForm({
             onPress={handleSubmit}
             className="mt-4 flex-row items-center justify-center gap-2 rounded-xl bg-forest py-3 active:opacity-80 active:scale-[0.98]"
             >
-            <Ionicons name="save-outline" size={18} color="#F8F7F4" />
+            <Ionicons name="save-outline" size={18} color={colors.cream} />
 
             <Text className="text-[15px] font-semibold text-cream">
                 {isLoading ? 'Guardando...' : submitLabel}

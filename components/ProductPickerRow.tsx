@@ -7,6 +7,7 @@ import type { Product } from '@/types/product';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { ActivityIndicator, Image, Pressable, Text, TextInput, View } from 'react-native';
+import { useThemeColors } from '@/hooks/useThemeColors';
 
 interface Props {
   product: Product;
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export function ProductPickerRow({ product, pantryId, isAdded, currentStock }: Props) {
+  const colors = useThemeColors();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [qty, setQty] = useState('1');
 
@@ -68,7 +70,7 @@ export function ProductPickerRow({ product, pantryId, isAdded, currentStock }: P
               resizeMode="contain"
             />
           ) : (
-            <Ionicons name="cube-outline" size={20} color="#9E9B95" />
+            <Ionicons name="cube-outline" size={20} color={colors.muted} />
           )}
         </View>
 
@@ -97,9 +99,9 @@ export function ProductPickerRow({ product, pantryId, isAdded, currentStock }: P
               onPress={() => removeProduct.mutate({ pantryId, sku: product.sku })}
             >
               {removeProduct.isPending ? (
-                <ActivityIndicator size="small" color="#E76F51" />
+                <ActivityIndicator size="small" color={colors.expired} />
               ) : (
-                <Ionicons name="trash-outline" size={15} color="#E76F51" />
+                <Ionicons name="trash-outline" size={15} color={colors.expired} />
               )}
             </Pressable>
           </View>
@@ -108,7 +110,7 @@ export function ProductPickerRow({ product, pantryId, isAdded, currentStock }: P
             className="w-9 h-9 rounded-full bg-forest dark:bg-mint items-center justify-center active:opacity-70"
             onPress={() => setPickerOpen(true)}
           >
-            <Ionicons name="add" size={20} color="#F2F0EB" />
+            <Ionicons name="add" size={20} color={colors.cream} />
           </Pressable>
         ) : null}
       </View>

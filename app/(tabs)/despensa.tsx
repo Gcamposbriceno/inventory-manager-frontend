@@ -70,7 +70,7 @@ function PantryTypeProducts({
   typeName: string;
   pantryProducts: PantryProduct[];
 }) {
-  const { primary } = useThemeColors();
+  const { primary, muted, expired } = useThemeColors();
   const { data: typeProducts, isLoading } = useProductTypeProducts(typeName);
 
   const removeProduct = useRemovePantryProduct();
@@ -106,7 +106,7 @@ function PantryTypeProducts({
                   resizeMode="contain"
                 />
               ) : (
-                <Ionicons name="cube-outline" size={16} color="#9E9B95" />
+                <Ionicons name="cube-outline" size={16} color={muted} />
               )}
             </View>
 
@@ -131,9 +131,9 @@ function PantryTypeProducts({
               onPress={() => removeProduct.mutate({ pantryId, sku: p.sku })}
             >
               {isRemoving ? (
-                <ActivityIndicator size="small" color="#E76F51" />
+                <ActivityIndicator size="small" color={expired} />
               ) : (
-                <Ionicons name="trash-outline" size={13} color="#E76F51" />
+                <Ionicons name="trash-outline" size={13} color={expired} />
               )}
             </Pressable>
           </View>
@@ -185,7 +185,7 @@ function PantryTypeProducts({
             className="flex-row items-center gap-1 active:opacity-70"
             onPress={() => setConfirmRemove(true)}
           >
-            <Ionicons name="trash-outline" size={13} color="#E76F51" />
+            <Ionicons name="trash-outline" size={13} color={expired} />
             <Text className="text-[13px] font-medium text-expired">Eliminar tipo</Text>
           </Pressable>
         )}
@@ -279,7 +279,9 @@ function PantryTypeRow({
 type Filter = 'all' | 'critical' | 'ok';
 
 export default function DespensaScreen() {
-  const { warn } = useThemeColors();
+  const { warn, muted, cream } = useThemeColors();
+  const { pantryId } = usePantry();
+  const [selectedPantryId, setSelectedPantryId] = useState<string | null>(pantryId);
   const [filter, setFilter] = useState<Filter>('all');
   const [expandedTypeId, setExpandedTypeId] = useState<string | null>(null);
   const { data: pantries, isLoading: pantriesLoading } = usePantries();
@@ -338,7 +340,7 @@ export default function DespensaScreen() {
                 )
               }
             >
-              <Ionicons name="share-social-outline" size={18} color="#9E9B95" />
+              <Ionicons name="share-social-outline" size={18} color={muted} />
             </Pressable>
           )}
         </View>
@@ -367,7 +369,7 @@ export default function DespensaScreen() {
               <Ionicons
                 name="storefront-outline"
                 size={14}
-                color={selectedPantryId === p.id ? '#F2F0EB' : '#9E9B95'}
+                color={selectedPantryId === p.id ? cream : muted}
               />
               <Text
                 className={
@@ -397,7 +399,7 @@ export default function DespensaScreen() {
           </View>
         ) : types.length === 0 ? (
           <View className="mx-5 rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] py-12 items-center gap-3">
-            <Ionicons name="basket-outline" size={48} color="#9E9B95" />
+            <Ionicons name="basket-outline" size={48} color={muted} />
             <Text className="text-[15px] font-semibold text-ink dark:text-[#F2F0EB]">
               Sin productos configurados
             </Text>
@@ -490,7 +492,7 @@ export default function DespensaScreen() {
             {/* Product type list */}
             {filtered.length === 0 ? (
               <View className="mx-5 rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] py-10 items-center gap-2">
-                <Ionicons name="checkmark-circle-outline" size={48} color="#9E9B95" />
+                <Ionicons name="checkmark-circle-outline" size={48} color={muted} />
                 <Text className="text-[14px] text-pebble">Todo en orden</Text>
               </View>
             ) : (
@@ -530,7 +532,7 @@ export default function DespensaScreen() {
             )
           }
         >
-          <Ionicons name="add" size={28} color="#F2F0EB" />
+          <Ionicons name="add" size={28} color={cream} />
         </Pressable>
       )}
     </SafeAreaView>

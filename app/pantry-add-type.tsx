@@ -99,10 +99,11 @@ function StepIndicator({ active }: { active: 0 | 1 | 2 }) {
 // ── type anchor card ──────────────────────────────────────────────────────────
 
 function TypeCard({ name, unit, pantryName }: { name: string; unit: string; pantryName: string }) {
+  const { sage } = useThemeColors();
   return (
     <View className="bg-mist dark:bg-[#0D2B1A] rounded-2xl px-4 py-3 mb-7 flex-row items-center gap-3">
       <View className="w-9 h-9 rounded-xl bg-white dark:bg-[#1E1E1C] items-center justify-center flex-shrink-0">
-        <Ionicons name="cube-outline" size={18} color="#2D6A4F" />
+        <Ionicons name="cube-outline" size={18} color={sage} />
       </View>
       <View>
         <Text className="text-[15px] font-semibold text-ink dark:text-[#F2F0EB]">{name}</Text>
@@ -133,6 +134,7 @@ function Stepper({
   onMinus: () => void;
   onPlus: () => void;
 }) {
+  const { ink, stone } = useThemeColors();
   return (
     <View className="mb-6">
       <View className="mb-3">
@@ -149,7 +151,7 @@ function Stepper({
         >
           <Text
             className="text-[26px] font-light leading-none"
-            style={{ color: value > 0 ? '#1C1C1A' : '#E8E6E1' }}
+            style={{ color: value > 0 ? ink : stone }}
           >
             −
           </Text>
