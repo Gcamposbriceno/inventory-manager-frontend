@@ -1,7 +1,7 @@
 import { LeavePantryModal } from '@/components/LeavePantryModal';
 import { useTheme, type ThemeMode } from '@/context/ThemeContext';
 import { useThemeColors } from '@/hooks/useThemeColors';
-import { usePantry } from '@/lib/api/pantries';
+import { usePantries } from '@/lib/api/pantries';
 import type { Pantry } from '@/types/pantry';
 import { useClerk } from '@clerk/clerk-expo';
 import { Ionicons } from '@expo/vector-icons';
@@ -32,7 +32,7 @@ const THEME_OPTIONS: { value: ThemeMode; label: string; description: string; ico
 ];
 
 export default function SettingsScreen() {
-  const { data: pantries } = usePantry();
+  const { data: pantries } = usePantries();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedPantry, setSelectedPantry] = useState<string | null>(null);

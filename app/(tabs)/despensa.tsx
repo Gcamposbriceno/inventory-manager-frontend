@@ -1,4 +1,5 @@
 import { StockStepper } from '@/components/StockStepper';
+import { usePantryContext } from '@/context/PantryContext';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import {
   usePantries,
@@ -280,12 +281,11 @@ type Filter = 'all' | 'critical' | 'ok';
 
 export default function DespensaScreen() {
   const { warn, muted, cream } = useThemeColors();
-  const { pantryId } = usePantry();
+  const { activePantryId: pantryId } = usePantryContext();
   const [selectedPantryId, setSelectedPantryId] = useState<string | null>(pantryId);
   const [filter, setFilter] = useState<Filter>('all');
   const [expandedTypeId, setExpandedTypeId] = useState<string | null>(null);
   const { data: pantries, isLoading: pantriesLoading } = usePantries();
-  const [selectedPantryId, setSelectedPantryId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!pantries) return;

@@ -13,19 +13,6 @@ import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/rea
 import { pantryKeys } from './queryKeys';
 
 // --- Overview ---
-export function usePantry() {
-  const apiFetch = useApiFetch();
-  const { isLoaded } = useAuth();
-
-  return useQuery<Pantry[]>({
-    queryKey: pantryKeys.list(),
-    enabled: isLoaded,
-    queryFn: async () => {
-      return apiFetch('/pantries/');
-    },
-  });
-}
-
 export function usePantryOverview(pantryId: string) {
   const apiFetch = useApiFetch();
   return useQuery<PantryTypeOverview[]>({
@@ -50,8 +37,11 @@ export function useAllPantriesOverview(pantries: Pantry[]) {
 
 export function usePantries() {
   const apiFetch = useApiFetch();
+  const { isLoaded } = useAuth();
+
   return useQuery<Pantry[]>({
     queryKey: pantryKeys.all(),
+    enabled: isLoaded,
     queryFn: () => apiFetch('/pantries/'),
   });
 }
@@ -137,8 +127,7 @@ export function useLeavePantry() {
   return useMutation<null, Error, string>({
     mutationFn: (pantryId) => apiFetch(`/pantries/${pantryId}/leave`, { method: 'POST' }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: pantryKeys.all(), exact: true });
-      queryClient.invalidateQueries({ queryKey: pantryKeys.list() });
+      queryClient.invalidateQueries({ queryKey: pantryKeys.all() });
     },
   });
 }
