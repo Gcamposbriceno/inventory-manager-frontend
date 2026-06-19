@@ -1,3 +1,4 @@
+import { usePantryContext } from '@/context/PantryContext';
 import { useQuickFillProductTypes } from '@/lib/api/productTypes';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams, useNavigation } from 'expo-router';
@@ -27,9 +28,7 @@ const UNIT_LABEL: Record<string, string> = {
 export default function PantryQuickFillScreen() {
   const { width: screenWidth } = useWindowDimensions();
   const navigation = useNavigation();
-  const { pantryId } = useLocalSearchParams<{
-    pantryId: string;
-  }>();
+  const { activePantryId: pantryId } = usePantryContext();
   const { data: types, isLoading } = useQuickFillProductTypes();
 
   const [index, setIndex] = useState(0);
