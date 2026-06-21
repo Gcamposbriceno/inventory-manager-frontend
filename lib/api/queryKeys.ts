@@ -18,6 +18,7 @@ export const pantryKeys = {
   products:     (id: string) => ['pantries', id, 'products'] as const,
   productTypes: (id: string) => ['pantries', id, 'productTypes'] as const,
   overview:     (id: string) => ['pantries', id, 'overview'] as const,
+  history:      (id: string) => ['pantries', id, 'history'] as const,
   // kept for backwards-compat
   items:        (id: string) => ['pantries', id, 'items'] as const,
 };
