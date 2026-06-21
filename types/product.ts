@@ -6,6 +6,8 @@ export interface Product {
   product_type_id: string;
   image_url?: string;
   product_url?: string;
+  product_type_name?: string;
+  unit_multiplier_un?: number;
 }
 
 export interface CreateProductData {

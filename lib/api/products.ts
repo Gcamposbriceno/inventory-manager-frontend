@@ -1,6 +1,6 @@
 import { useApiFetch } from '@/hooks/useApiFetch';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Product, CreateProductData, UpdateProductData } from '@/types/product';
+import type { CreateProductData, Product, UpdateProductData } from '@/types/product';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { productKeys } from './queryKeys';
 
 export function useProducts() {

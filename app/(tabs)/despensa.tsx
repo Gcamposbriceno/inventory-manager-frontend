@@ -312,7 +312,6 @@ export default function DespensaScreen() {
   const [filter, setFilter] = useState<Filter>('all');
   const [expandedTypeId, setExpandedTypeId] = useState<string | null>(null);
   const { data: pantries, isLoading: pantriesLoading } = usePantries();
-  console.log(pantries, 'patnries');
   const [selectedPantryId, setSelectedPantryId] = useState<string | null>(null);
 
   useEffect(() => {
