@@ -126,6 +126,12 @@ export function RecipeForm({
         );
         return;
       }
+      if (!ingredient.preferred_product_id) {
+        alert(
+          `Debes seleccionar un producto preferido para "${ingredient.name}"`
+        );
+        return;
+      }
     }
 
     onSubmit({

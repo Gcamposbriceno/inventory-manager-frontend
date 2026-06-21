@@ -1,7 +1,9 @@
 import { DAYS, todayKey, usePlanner, type DayKey } from '@/context/PlannerContext';
 import { usePantries, usePantryProducts, useUpdatePantryStock } from '@/lib/api/pantries';
+import { useProducts } from '@/lib/api/products';
 import { useProductTypes } from '@/lib/api/productTypes';
 import { usePublicRecipes, useRecipesMe } from '@/lib/api/recipes';
+import { ProductType } from '@/types/productType';
 import type { Recipe } from '@/types/recipe';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -24,6 +26,7 @@ export default function PlanificadorScreen() {
   const [selectedPantryId, setSelectedPantryId] = useState<string | null>(null);
   const updateStock = useUpdatePantryStock();
   const { data: pantryProducts = [] } = usePantryProducts(selectedPantryId ?? '');
+  const { data: allProducts = [], isLoading: productsLoading } = useProducts();
 
   const allRecipes = useMemo(() => {
     const seen = new Set<string>();
@@ -35,11 +38,9 @@ export default function PlanificadorScreen() {
     }
     return combined;
   }, [myRecipes, publicRecipes]);
-
   const filteredRecipes = allRecipes.filter((rec) =>
     rec.name.toLowerCase().includes(pickerSearch.toLowerCase()),
   );
-
   const today = todayKey();
   const meals = weekPlan[selectedDay] ?? [];
   const totalMeals = DAYS.reduce((n, d) => n + (weekPlan[d.key]?.length ?? 0), 0);
@@ -49,22 +50,29 @@ export default function PlanificadorScreen() {
     setPickerSearch('');
     setPickerOpen(true);
   }
-  const productTypeMap = useMemo(
+  const productTypeMap: Record<string, ProductType> = useMemo(
     () =>
       Object.fromEntries(
         productTypes.map((type) => [type.id, type])
       ),
     [productTypes]
   );
-
+  const productBySku = new Map(
+  allProducts.map(p => [p.sku, p])
+  );
   async function openCookModal(meal: any) {
     const factor = meal.porciones / meal.servings;
 
-    const ingredients = (meal.ingredientes ?? []).map((ingredient: any) => ({
-      name: productTypeMap[ingredient.type_id]?.name ?? 'Desconocido',
-      amount: ingredient.amount * factor,
-    }));
+    const ingredients = (meal.ingredientes ?? []).map((ingredient: any) => {
+      const type = productTypeMap[ingredient.type_id];
 
+      return {
+        name: type?.name ?? 'Desconocido',
+        amount: ingredient.amount * factor,
+        unit: type?.measurement_unit ?? null,
+      };
+    });
+    
     const totalIngredients = ingredients.length;
 
     setResolvedIngredients(ingredients);
@@ -76,6 +84,7 @@ export default function PlanificadorScreen() {
     setSelectedPantryId(null);
     setCookModalOpen(true);
   }
+
   if (pickerOpen) {
     return (
       <SafeAreaView className="flex-1 bg-cream dark:bg-[#161614]" edges={['top']}>
@@ -332,6 +341,7 @@ export default function PlanificadorScreen() {
           <Text className="text-[14px] text-pebble mt-2">
             En caso de que no tengas la cantidad necesaria de un ingrediente en la despensa,
             este quedará en 0.
+            En caso de que no tengas el ingrediente exacto, se consumira otro del mismo tipo.
           </Text>
 
           <Text className="text-[14px] font-semibold text-ink dark:text-[#F2F0EB] mt-4">
@@ -392,7 +402,7 @@ export default function PlanificadorScreen() {
             {resolvedIngredients?.length > 0 ? (
               resolvedIngredients.map((ing, idx) => (
                 <Text key={idx} className="text-[13px] text-pebble mt-1">
-                  • {ing.amount} {ing.name}
+                  • {ing.amount.toFixed(2)} {ing.unit} {ing.name}
                 </Text>
               ))
             ) : (
@@ -418,51 +428,80 @@ export default function PlanificadorScreen() {
               <Text className="text-pebble">Cancelar</Text>
             </Pressable>
 
-            <Pressable
-              disabled={!selectedPantryId}
-              onPress={async () => {
-                if (!selectedPantryId || !selectedMeal) return;
+          <Pressable
+            disabled={!selectedPantryId || productsLoading}
+            onPress={async () => {
+              if (!selectedPantryId || !selectedMeal) return;
 
-                const factor = selectedMeal.porciones / selectedMeal.servings;
+              const factor = selectedMeal.porciones / selectedMeal.servings;
 
-                for (const ingredient of selectedMeal.ingredientes) {
-                  const amountToConsume = ingredient.amount * factor;
+              const stockOverrides = new Map<string, number>();
+              const getStock = (sku: string) =>
+                stockOverrides.get(sku) ??
+                pantryProducts.find(p => p.product_sku === sku)?.stock ??
+                0;
 
-                  if (ingredient.preferred_product_sku) {
-                    const product = pantryProducts.find(
-                      (p) => p.product_sku === ingredient.preferred_product_sku,
-                    );
+              for (const ingredient of selectedMeal.ingredientes) {
+                let remaining = ingredient.amount * factor;
 
-                    if (!product) continue;
+                const targetSku = ingredient.preferred_product_sku;
+                const targetTypeId = targetSku
+                  ? productBySku.get(targetSku)?.product_type_name
+                  : undefined;
 
-                    await updateStock.mutateAsync({
-                      pantryId: selectedPantryId,
-                      sku: product.product_sku,
-                      stock: Math.max(0, product.stock - amountToConsume),
-                    });
-                  }
+                const candidates = pantryProducts
+                  .map(p => {
+                    const info = productBySku.get(p.product_sku);
+                    const unit = info?.unit_multiplier_un ?? 1;
+                    const stock = getStock(p.product_sku);
+
+                    return {
+                      sku: p.product_sku,
+                      unit,
+                      type: info?.product_type_name,
+                      stock,
+                      availableBase: stock * unit,
+                    };
+                  })
+                  .filter(p => p.availableBase > 0 && (p.sku === targetSku || p.type === targetTypeId))
+                  .sort((a, b) =>
+                    a.sku === targetSku ? -1 : b.sku === targetSku ? 1 : b.availableBase - a.availableBase,
+                  );
+
+                for (const product of candidates) {
+                  if (remaining <= 0) break;
+
+                  const consumeBase = Math.min(product.availableBase, remaining);
+                  const unitsToRemove = Math.ceil(consumeBase / product.unit);
+                  const newStock = Math.max(0, product.stock - unitsToRemove);
+
+                  await updateStock.mutateAsync({
+                    pantryId: selectedPantryId,
+                    sku: product.sku,
+                    stock: Number(newStock.toFixed(3)),
+                  });
+
+                  stockOverrides.set(product.sku, newStock);
+                  remaining -= consumeBase;
                 }
+              }
 
-                setCookModalOpen(false);
-                setSelectedMeal(null);
-                setSelectedPantryId(null);
-              }}
-              className={`px-4 py-2 rounded-lg ${
-                selectedPantryId
-                  ? 'bg-forest'
-                  : 'bg-stone dark:bg-[#2E2E2C]'
+              setCookModalOpen(false);
+              setSelectedMeal(null);
+              setSelectedPantryId(null);
+            }}
+            className={`px-4 py-2 rounded-lg ${
+              selectedPantryId ? 'bg-forest' : 'bg-stone dark:bg-[#2E2E2C]'
+            }`}
+          >
+            <Text
+              className={`font-semibold ${
+                selectedPantryId ? 'text-cream' : 'text-pebble'
               }`}
             >
-              <Text
-                className={`font-semibold ${
-                  selectedPantryId
-                    ? 'text-cream'
-                    : 'text-pebble'
-                }`}
-              >
-                Confirmar
-              </Text>
-            </Pressable>
+              Confirmar
+            </Text>
+          </Pressable>
           </View>
 
         </View>

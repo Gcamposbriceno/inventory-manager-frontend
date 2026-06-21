@@ -2,6 +2,7 @@ import { useApiFetch } from '@/hooks/useApiFetch';
 import type {
   AddPantryProductTypeData,
   Pantry,
+  PantryHistory,
   PantryMember,
   PantryProduct,
   PantryProductType,
@@ -30,6 +31,16 @@ export function useAllPantriesOverview(pantries: Pantry[]) {
       queryFn: () => apiFetch<PantryTypeOverview[]>(`/pantries/${p.id}/overview`),
       enabled: !!p.id,
     })),
+  });
+}
+
+// --- History ---
+export function usePantryHistory(pantryId: string) {
+  const apiFetch = useApiFetch();
+  return useQuery<PantryHistory>({
+    queryKey: pantryKeys.history(pantryId),
+    queryFn: () => apiFetch(`/pantries/${pantryId}/history`),
+    enabled: !!pantryId,
   });
 }
 
