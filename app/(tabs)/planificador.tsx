@@ -57,10 +57,6 @@ export default function PlanificadorScreen() {
       ),
     [productTypes]
   );
-  const typeBySku = new Map(
-    allProducts.map(p => [p.sku, p.product_type_name])
-  );
-
   const productBySku = new Map(
   allProducts.map(p => [p.sku, p])
   );
@@ -439,80 +435,55 @@ export default function PlanificadorScreen() {
 
               const factor = selectedMeal.porciones / selectedMeal.servings;
 
+              const stockOverrides = new Map<string, number>();
+              const getStock = (sku: string) =>
+                stockOverrides.get(sku) ??
+                pantryProducts.find(p => p.product_sku === sku)?.stock ??
+                0;
+
               for (const ingredient of selectedMeal.ingredientes) {
-                const amountToConsume = ingredient.amount * factor;
+                let remaining = ingredient.amount * factor;
 
                 const targetSku = ingredient.preferred_product_sku;
-
                 const targetTypeId = targetSku
                   ? productBySku.get(targetSku)?.product_type_name
-                  : typeBySku.get(targetSku);
+                  : undefined;
 
-                let remaining = amountToConsume;
+                const candidates = pantryProducts
+                  .map(p => {
+                    const info = productBySku.get(p.product_sku);
+                    const unit = info?.unit_multiplier_un ?? 1;
+                    const stock = getStock(p.product_sku);
 
-                const exactProduct = targetSku
-                  ? pantryProducts.find(p => p.product_sku === targetSku)
-                  : null;
+                    return {
+                      sku: p.product_sku,
+                      unit,
+                      type: info?.product_type_name,
+                      stock,
+                      availableBase: stock * unit,
+                    };
+                  })
+                  .filter(p => p.availableBase > 0 && (p.sku === targetSku || p.type === targetTypeId))
+                  .sort((a, b) =>
+                    a.sku === targetSku ? -1 : b.sku === targetSku ? 1 : b.availableBase - a.availableBase,
+                  );
 
-                if (exactProduct && remaining > 0) {
-                  const info = productBySku.get(exactProduct.product_sku);
-                  const unit = info?.unit_multiplier_un ?? 1;
+                for (const product of candidates) {
+                  if (remaining <= 0) break;
 
-                  const availableBase = exactProduct.stock * unit;
-
-                  const consumeBase = Math.min(availableBase, remaining);
-
-                  const unitsToRemove = Math.ceil(consumeBase / unit);
-                  const newStock = Math.max(0, exactProduct.stock - unitsToRemove);
+                  const consumeBase = Math.min(product.availableBase, remaining);
+                  const unitsToRemove = Math.ceil(consumeBase / product.unit);
+                  const newStock = Math.max(0, product.stock - unitsToRemove);
 
                   await updateStock.mutateAsync({
                     pantryId: selectedPantryId,
-                    sku: exactProduct.product_sku,
+                    sku: product.sku,
                     stock: Number(newStock.toFixed(3)),
                   });
 
+                  stockOverrides.set(product.sku, newStock);
                   remaining -= consumeBase;
-
                 }
-                if (remaining > 0 && targetTypeId) {
-
-                  const candidates = pantryProducts
-                    .map(p => {
-                      const info = productBySku.get(p.product_sku);
-                      const unit = info?.unit_multiplier_un ?? 1;
-
-                      return {
-                        ...p,
-                        unit,
-                        type: info?.product_type_name,
-                        availableBase: p.stock * unit,
-                      };
-                    })
-                    .filter(p => p.type === targetTypeId && p.availableBase > 0)
-                    .sort((a, b) => b.availableBase - a.availableBase);
-
-                  for (const product of candidates) {
-                    if (remaining <= 0) break;
-
-                    const availableBase = product.availableBase;
-
-                    const consumeBase = Math.min(availableBase, remaining);
-
-                    const unitsToRemove = Math.ceil(consumeBase / product.unit);
-
-                    const newStock = Math.max(0, product.stock - unitsToRemove);
-
-                    await updateStock.mutateAsync({
-                      pantryId: selectedPantryId,
-                      sku: product.product_sku,
-                      stock: Number(newStock.toFixed(3)),
-                    });
-
-                    remaining -= consumeBase;
-
-                  }
-                }
-
               }
 
               setCookModalOpen(false);
