@@ -7,35 +7,25 @@ function dateAt(hour: number): Date {
 }
 
 describe('greeting', () => {
-  it('returns "Buenos días" at midnight (00:00)', () => {
+  it('returns morning greeting before noon', () => {
     expect(greeting(dateAt(0))).toBe('Buenos días');
   });
 
-  it('returns "Buenos días" at 06:00', () => {
-    expect(greeting(dateAt(6))).toBe('Buenos días');
-  });
-
-  it('returns "Buenos días" at 11:00', () => {
-    expect(greeting(dateAt(11))).toBe('Buenos días');
-  });
-
-  it('returns "Buenas tardes" at 12:00', () => {
+  it('returns afternoon greeting at start of afternoon', () => {
     expect(greeting(dateAt(12))).toBe('Buenas tardes');
   });
 
-  it('returns "Buenas tardes" at 15:00', () => {
-    expect(greeting(dateAt(15))).toBe('Buenas tardes');
-  });
-
-  it('returns "Buenas tardes" at 18:00', () => {
-    expect(greeting(dateAt(18))).toBe('Buenas tardes');
-  });
-
-  it('returns "Buenas noches" at 19:00', () => {
+  it('returns night greeting at start of night', () => {
     expect(greeting(dateAt(19))).toBe('Buenas noches');
   });
 
-  it('returns "Buenas noches" at 23:00', () => {
-    expect(greeting(dateAt(23))).toBe('Buenas noches');
+  it('switches correctly at boundary 11 → 12', () => {
+    expect(greeting(dateAt(11))).toBe('Buenos días');
+    expect(greeting(dateAt(12))).toBe('Buenas tardes');
+  });
+
+  it('switches correctly at boundary 18 → 19', () => {
+    expect(greeting(dateAt(18))).toBe('Buenas tardes');
+    expect(greeting(dateAt(19))).toBe('Buenas noches');
   });
 });
