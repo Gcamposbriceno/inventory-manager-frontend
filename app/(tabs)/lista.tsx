@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAllPantriesOverview, usePantries } from '@/lib/api/pantries';
 import type { PantryTypeOverview } from '@/types/pantry';
+import { useThemeColors } from '@/hooks/useThemeColors';
 
 type ItemStatus = 'empty' | 'low' | 'partial';
 
@@ -128,6 +129,7 @@ function Section({
 }
 
 export default function ListaScreen() {
+  const colors = useThemeColors();
   const { data: pantries, isLoading: pantriesLoading } = usePantries();
   const [listaPantry, setListaPantry] = useState<string>('all');
   const [checked, setChecked] = useState<Record<string, boolean>>({});
@@ -248,14 +250,14 @@ export default function ListaScreen() {
             <Section
               title="Urgente"
               items={urgent}
-              dotColor="#E76F51"
+              dotColor={colors.expired}
               checked={checked}
               onToggle={toggle}
             />
             <Section
               title="Sugerido"
               items={suggested}
-              dotColor="#E9C46A"
+              dotColor={colors.warn}
               checked={checked}
               onToggle={toggle}
             />

@@ -13,19 +13,6 @@ import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/rea
 import { pantryKeys } from './queryKeys';
 
 // --- Overview ---
-export function usePantry() {
-  const apiFetch = useApiFetch();
-  const { isLoaded } = useAuth();
-
-  return useQuery<Pantry[]>({
-    queryKey: pantryKeys.list(),
-    enabled: isLoaded,
-    queryFn: async () => {
-      return apiFetch("/pantries/");
-    },
-  });
-}
-
 export function usePantryOverview(pantryId: string) {
   const apiFetch = useApiFetch();
   return useQuery<PantryTypeOverview[]>({
@@ -50,8 +37,11 @@ export function useAllPantriesOverview(pantries: Pantry[]) {
 
 export function usePantries() {
   const apiFetch = useApiFetch();
+  const { isLoaded } = useAuth();
+
   return useQuery<Pantry[]>({
     queryKey: pantryKeys.all(),
+    enabled: isLoaded,
     queryFn: () => apiFetch('/pantries/'),
   });
 }
@@ -121,7 +111,10 @@ export function useSetPantryNickname() {
   const queryClient = useQueryClient();
   return useMutation<null, Error, { pantryId: string; nickname: string }>({
     mutationFn: ({ pantryId, nickname }) =>
-      apiFetch(`/pantries/${pantryId}/nickname`, { method: 'PATCH', body: JSON.stringify({ nickname }) }),
+      apiFetch(`/pantries/${pantryId}/nickname`, {
+        method: 'PATCH',
+        body: JSON.stringify({ nickname }),
+      }),
     onSuccess: (_result, { pantryId }) => {
       queryClient.invalidateQueries({ queryKey: pantryKeys.members(pantryId) });
     },
@@ -132,8 +125,7 @@ export function useLeavePantry() {
   const apiFetch = useApiFetch();
   const queryClient = useQueryClient();
   return useMutation<null, Error, string>({
-    mutationFn: (pantryId) =>
-      apiFetch(`/pantries/${pantryId}/leave`, { method: 'POST' }),
+    mutationFn: (pantryId) => apiFetch(`/pantries/${pantryId}/leave`, { method: 'POST' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: pantryKeys.all() });
     },
@@ -180,7 +172,10 @@ export function useAddPantryProduct() {
   const queryClient = useQueryClient();
   return useMutation<PantryProduct, Error, { pantryId: string; sku: string }>({
     mutationFn: ({ pantryId, sku }) =>
-      apiFetch(`/pantries/${pantryId}/products`, { method: 'POST', body: JSON.stringify({ product_sku: sku }) }),
+      apiFetch(`/pantries/${pantryId}/products`, {
+        method: 'POST',
+        body: JSON.stringify({ product_sku: sku }),
+      }),
     onSuccess: (_result, { pantryId }) => {
       queryClient.invalidateQueries({ queryKey: pantryKeys.products(pantryId) });
       queryClient.invalidateQueries({ queryKey: pantryKeys.overview(pantryId) });
@@ -194,7 +189,10 @@ export function useUpdatePantryStock() {
   const queryClient = useQueryClient();
   return useMutation<PantryProduct, Error, { pantryId: string; sku: string; stock: number }>({
     mutationFn: ({ pantryId, sku, stock }) =>
-      apiFetch(`/pantries/${pantryId}/products/${sku}`, { method: 'PATCH', body: JSON.stringify({ stock }) }),
+      apiFetch(`/pantries/${pantryId}/products/${sku}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ stock }),
+      }),
     onSuccess: (_result, { pantryId }) => {
       queryClient.invalidateQueries({ queryKey: pantryKeys.products(pantryId) });
       queryClient.invalidateQueries({ queryKey: pantryKeys.overview(pantryId) });
@@ -231,9 +229,16 @@ export function usePantryProductTypes(pantryId: string) {
 export function useAddPantryProductType() {
   const apiFetch = useApiFetch();
   const queryClient = useQueryClient();
-  return useMutation<PantryProductType, Error, { pantryId: string; data: AddPantryProductTypeData }>({
+  return useMutation<
+    PantryProductType,
+    Error,
+    { pantryId: string; data: AddPantryProductTypeData }
+  >({
     mutationFn: ({ pantryId, data }) =>
-      apiFetch(`/pantries/${pantryId}/product-types`, { method: 'POST', body: JSON.stringify(data) }),
+      apiFetch(`/pantries/${pantryId}/product-types`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
     onSuccess: (_result, { pantryId }) => {
       queryClient.invalidateQueries({ queryKey: pantryKeys.productTypes(pantryId) });
       queryClient.invalidateQueries({ queryKey: pantryKeys.overview(pantryId) });
@@ -245,9 +250,16 @@ export function useAddPantryProductType() {
 export function useUpdatePantryProductType() {
   const apiFetch = useApiFetch();
   const queryClient = useQueryClient();
-  return useMutation<PantryProductType, Error, { pantryId: string; typeId: string; data: UpdatePantryProductTypeData }>({
+  return useMutation<
+    PantryProductType,
+    Error,
+    { pantryId: string; typeId: string; data: UpdatePantryProductTypeData }
+  >({
     mutationFn: ({ pantryId, typeId, data }) =>
-      apiFetch(`/pantries/${pantryId}/product-types/${typeId}`, { method: 'PATCH', body: JSON.stringify(data) }),
+      apiFetch(`/pantries/${pantryId}/product-types/${typeId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
     onSuccess: (_result, { pantryId }) => {
       queryClient.invalidateQueries({ queryKey: pantryKeys.productTypes(pantryId) });
       queryClient.invalidateQueries({ queryKey: pantryKeys.all() });

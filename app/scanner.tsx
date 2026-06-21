@@ -1,34 +1,19 @@
-import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import { useThemeColors } from '@/hooks/useThemeColors';
+import { useProductByEan } from '@/lib/api/products';
 
 const FRAME_W = 252;
 const FRAME_H = 140;
 
-const C = {
-  cream:  '#F8F7F4',
-  forest: '#1B4332',
-  mint:   '#52B788',
-  mist:   '#D8F3DC',
-  stone:  '#E8E6E1',
-  pebble: '#9E9B95',
-  ink:    '#1C1C1A',
-  DIM:    'rgba(0,0,0,0.72)',
-} as const;
-
-const MOCK = {
-  name:    'Leche Entera 1L',
-  brand:   'Soprole',
-  icon:    'water-outline' as const,
-  current: 2,
-  unit:    'L',
-};
-
 type ConsumptionMode = 'all' | 'partial';
 
 function ScanCorner({ pos }: { pos: 'tl' | 'tr' | 'bl' | 'br' }) {
+  const colors = useThemeColors();
   const top  = pos[0] === 't';
   const left = pos[1] === 'l';
   return (
@@ -45,7 +30,7 @@ function ScanCorner({ pos }: { pos: 'tl' | 'tr' | 'bl' | 'br' }) {
         borderBottomWidth: !top ? 2.5 : 0,
         borderLeftWidth:   left  ? 2.5 : 0,
         borderRightWidth:  !left ? 2.5 : 0,
-        borderColor: C.mint,
+        borderColor: colors.mint,
         borderTopLeftRadius:     top  && left  ? 4 : 0,
         borderTopRightRadius:    top  && !left ? 4 : 0,
         borderBottomLeftRadius:  !top && left  ? 4 : 0,
@@ -57,183 +42,177 @@ function ScanCorner({ pos }: { pos: 'tl' | 'tr' | 'bl' | 'br' }) {
 
 export default function ScannerScreen() {
   const insets = useSafeAreaInsets();
-  const [showSheet, setShowSheet] = useState(false);
+  const colors = useThemeColors();
+  const [permission, requestPermission] = useCameraPermissions();
+  const [scannedCode, setScannedCode] = useState<string | null>(null);
+  const { data: product, isLoading: productLoading, isError: productNotFound } = useProductByEan(scannedCode ?? '');
+  const [torchOn, setTorchOn] = useState(false);
   const [mode, setMode] = useState<ConsumptionMode>('all');
   const [amount, setAmount] = useState(0.5);
+  const scanning = useRef(false);
 
-  function handleSimulate() {
-    setShowSheet(true);
+  function handleBarcodeScanned({ data }: { data: string }) {
+    if (scanning.current) return;
+    scanning.current = true;
+    setScannedCode(data);
+  }
+
+  function handleScanAnother() {
+    setScannedCode(null);
     setMode('all');
     setAmount(0.5);
+    scanning.current = false;
+  }
+
+  if (!permission) {
+    return <View className="flex-1 bg-black" />;
+  }
+
+  if (!permission.granted) {
+    return (
+      <View className="flex-1 bg-black items-center justify-center px-8">
+        <Ionicons name="camera-outline" size={48} color="rgba(255,255,255,0.4)" />
+        <Text className="text-white text-lg font-semibold mt-4 text-center">
+          Se necesita acceso a la cámara
+        </Text>
+        <Text className="text-white/55 text-sm mt-2 text-center leading-5">
+          Para escanear códigos de barras, acepta el permiso de cámara.
+        </Text>
+        <Pressable
+          onPress={requestPermission}
+          className="mt-7 bg-mint px-7 py-3 rounded-2xl"
+        >
+          <Text className="text-white font-semibold text-base">Permitir acceso</Text>
+        </Pressable>
+        <Pressable onPress={() => router.back()} className="mt-4 p-2">
+          <Text className="text-white/45 text-sm">Cancelar</Text>
+        </Pressable>
+      </View>
+    );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#111' }}>
-
-      {/* Overlay with transparent scan window cut-out */}
-      <View style={{ flex: 1 }}>
-        <View style={{ flex: 1, backgroundColor: C.DIM }} />
+    <View className="flex-1">
+      <CameraView
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        facing="back"
+        enableTorch={torchOn}
+        barcodeScannerSettings={{
+          barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128', 'code39', 'qr'],
+        }}
+        onBarcodeScanned={scannedCode ? undefined : handleBarcodeScanned}
+      />
+      {/* Dimmed overlay with transparent scan window */}
+      <View className="absolute inset-0" pointerEvents="none">
+        <View className="flex-1 bg-black/[0.72]" />
         <View style={{ flexDirection: 'row', height: FRAME_H }}>
-          <View style={{ flex: 1, backgroundColor: C.DIM }} />
-          {/* Transparent scan window */}
+          <View className="flex-1 bg-black/[0.72]" />
           <View style={{ width: FRAME_W, height: FRAME_H }}>
             <ScanCorner pos="tl" />
             <ScanCorner pos="tr" />
             <ScanCorner pos="bl" />
             <ScanCorner pos="br" />
           </View>
-          <View style={{ flex: 1, backgroundColor: C.DIM }} />
+          <View className="flex-1 bg-black/[0.72]" />
         </View>
-        <View style={{ flex: 2, backgroundColor: C.DIM }} />
+        <View className="bg-black/[0.72]" style={{ flex: 2 }} />
       </View>
 
       {/* Close button */}
       <Pressable
         onPress={() => router.back()}
-        style={{
-          position: 'absolute',
-          top: insets.top + 16,
-          left: 16,
-          width: 36,
-          height: 36,
-          borderRadius: 18,
-          backgroundColor: 'rgba(255,255,255,0.15)',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 10,
-        }}
+        className="absolute left-4 w-9 h-9 rounded-full bg-white/15 items-center justify-center"
+        style={{ top: insets.top + 16 }}
       >
         <Ionicons name="close" size={20} color="#FFFFFF" />
       </Pressable>
 
-      {/* Instruction + simulate button */}
-      {!showSheet && (
+      {/* Torch toggle */}
+      <Pressable
+        onPress={() => setTorchOn((v) => !v)}
+        className="absolute right-4 w-9 h-9 rounded-full items-center justify-center"
+        style={{
+          top: insets.top + 16,
+          backgroundColor: torchOn ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.15)',
+        }}
+      >
+        <Ionicons
+          name={torchOn ? 'flash' : 'flash-outline'}
+          size={18}
+          color={torchOn ? colors.ink : '#fff'}
+        />
+      </Pressable>
+
+      {/* Instruction */}
+      {!scannedCode && (
         <View
-          style={{
-            position: 'absolute',
-            bottom: 100 + insets.bottom,
-            left: 0,
-            right: 0,
-            alignItems: 'center',
-            gap: 14,
-          }}
+          className="absolute left-0 right-0 items-center"
+          style={{ bottom: 100 + insets.bottom }}
+          pointerEvents="none"
         >
-          <Text style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', letterSpacing: 0.2 }}>
+          <Text className="text-sm text-white/70 tracking-wide">
             Apunta al código de barras
           </Text>
-          <Pressable
-            onPress={handleSimulate}
-            style={{
-              paddingHorizontal: 22,
-              paddingVertical: 9,
-              borderRadius: 20,
-              backgroundColor: 'rgba(255,255,255,0.12)',
-              borderWidth: 1,
-              borderColor: 'rgba(255,255,255,0.25)',
-            }}
-          >
-            <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)' }}>
-              ✦  Simular escaneo
-            </Text>
-          </Pressable>
         </View>
       )}
 
       {/* Bottom sheet */}
-      {showSheet && (
+      {scannedCode && (
         <View
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            backgroundColor: C.cream,
-            borderTopLeftRadius: 24,
-            borderTopRightRadius: 24,
-            paddingTop: 12,
-            paddingHorizontal: 20,
-            paddingBottom: Math.max(32, insets.bottom + 16),
-            shadowColor: '#000',
-            shadowOpacity: 0.35,
-            shadowRadius: 40,
-            elevation: 8,
-          }}
+          className="absolute bottom-0 left-0 right-0 bg-cream rounded-t-3xl pt-3 px-5 shadow-2xl"
+          style={{ paddingBottom: Math.max(32, insets.bottom + 16) }}
         >
           {/* Handle */}
-          <View
-            style={{
-              width: 36,
-              height: 4,
-              borderRadius: 2,
-              backgroundColor: C.stone,
-              alignSelf: 'center',
-              marginBottom: 20,
-            }}
-          />
+          <View className="w-9 h-1 rounded-full bg-stone self-center mb-5" />
 
           {/* Product card */}
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 12,
-              padding: 12,
-              backgroundColor: C.mist,
-              borderRadius: 16,
-              marginBottom: 22,
-            }}
-          >
-            <View
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 12,
-                backgroundColor: '#fff',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-              }}
-            >
-              <Ionicons name={MOCK.icon} size={22} color={C.mint} />
+          <View className="flex-row items-center gap-3 p-3 bg-mist rounded-2xl mb-6">
+            <View className="w-11 h-11 rounded-xl bg-white items-center justify-center shrink-0 overflow-hidden">
+              {product?.image_url ? (
+                <Image source={{ uri: product.image_url }} style={{ width: 44, height: 44 }} resizeMode="contain" />
+              ) : (
+                <Ionicons
+                  name={productNotFound ? 'help-circle-outline' : 'barcode-outline'}
+                  size={22}
+                  color={productNotFound ? colors.muted : colors.mint}
+                />
+              )}
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 15, fontWeight: '600', color: C.ink }}>{MOCK.name}</Text>
-              <Text style={{ fontSize: 12, color: C.pebble }}>
-                {MOCK.brand}  ·  stock: {MOCK.current} {MOCK.unit}
+
+            <View className="flex-1">
+              {productLoading ? (
+                <ActivityIndicator size="small" color={colors.mint} />
+              ) : productNotFound ? (
+                <>
+                  <Text className="text-base font-semibold text-ink">No encontrado</Text>
+                  <Text className="text-xs text-pebble font-mono">{scannedCode}</Text>
+                </>
+              ) : (
+                <>
+                  <Text className="text-base font-semibold text-ink" numberOfLines={1}>{product!.name}</Text>
+                  <Text className="text-xs text-pebble">{product!.brand} · {product!.unit_amount}</Text>
+                </>
+              )}
+            </View>
+
+            <View className={`px-2 py-0.5 rounded-lg ${productNotFound ? 'bg-stone' : 'bg-emerald-50'}`}>
+              <Text className={`text-xs font-semibold ${productNotFound ? 'text-pebble' : 'text-emerald-800'}`}>
+                {productLoading ? '...' : productNotFound ? 'Sin coincidencia' : 'Detectado'}
               </Text>
-            </View>
-            <View
-              style={{
-                paddingHorizontal: 8,
-                paddingVertical: 3,
-                borderRadius: 8,
-                backgroundColor: '#ECFDF5',
-              }}
-            >
-              <Text style={{ fontSize: 11, fontWeight: '600', color: '#065F46' }}>Detectado</Text>
             </View>
           </View>
 
           {/* Consumption label */}
-          <Text
-            style={{
-              fontSize: 11,
-              fontWeight: '600',
-              letterSpacing: 1,
-              textTransform: 'uppercase',
-              color: C.pebble,
-              marginBottom: 10,
-            }}
-          >
+          <Text className="text-xs font-semibold tracking-widest uppercase text-pebble mb-2.5">
             ¿Cuánto consumiste?
           </Text>
 
           {/* Mode selector */}
-          <View style={{ flexDirection: 'row', gap: 10, marginBottom: 20 }}>
+          <View className="flex-row gap-2.5 mb-5">
             {(
               [
-                { key: 'all',     icon: 'trash-outline',          label: 'Se acabó'  },
-                { key: 'partial', icon: 'remove-circle-outline',  label: 'Una parte' },
+                { key: 'all',     icon: 'trash-outline',         label: 'Se acabó'  },
+                { key: 'partial', icon: 'remove-circle-outline', label: 'Una parte' },
               ] as { key: ConsumptionMode; icon: 'trash-outline' | 'remove-circle-outline'; label: string }[]
             ).map(({ key, icon, label }) => {
               const active = mode === key;
@@ -244,19 +223,18 @@ export default function ScannerScreen() {
                     setMode(key);
                     if (key === 'partial') setAmount(0.5);
                   }}
+                  className="flex-1 py-3 rounded-2xl items-center gap-1"
                   style={{
-                    flex: 1,
-                    paddingVertical: 13,
-                    borderRadius: 14,
-                    backgroundColor: active ? C.forest : '#fff',
+                    backgroundColor: active ? colors.primary : '#fff',
                     borderWidth: active ? 0 : 1,
-                    borderColor: C.stone,
-                    alignItems: 'center',
-                    gap: 3,
+                    borderColor: colors.stone,
                   }}
                 >
-                  <Ionicons name={icon} size={16} color={active ? C.cream : C.pebble} />
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: active ? C.cream : C.ink }}>
+                  <Ionicons name={icon} size={16} color={active ? colors.cream : colors.muted} />
+                  <Text
+                    className="text-sm font-semibold"
+                    style={{ color: active ? colors.cream : colors.ink }}
+                  >
                     {label}
                   </Text>
                 </Pressable>
@@ -266,54 +244,21 @@ export default function ScannerScreen() {
 
           {/* Amount stepper (partial only) */}
           {mode === 'partial' && (
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: '#fff',
-                borderRadius: 16,
-                borderWidth: 1,
-                borderColor: C.stone,
-                padding: 4,
-                gap: 4,
-                marginBottom: 20,
-              }}
-            >
+            <View className="flex-row items-center bg-white rounded-2xl border border-stone p-1 gap-1 mb-5">
               <Pressable
                 onPress={() => setAmount((p) => Math.max(0.5, +(p - 0.5).toFixed(1)))}
-                style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 12,
-                  backgroundColor: C.stone,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
+                className="w-13 h-13 rounded-xl bg-stone items-center justify-center shrink-0"
               >
-                <Text style={{ fontSize: 26, color: C.ink, lineHeight: 26, fontWeight: '300' }}>−</Text>
+                <Text className="text-3xl text-ink font-light leading-7">−</Text>
               </Pressable>
-              <View style={{ flex: 1, alignItems: 'center' }}>
-                <Text style={{ fontSize: 30, fontWeight: '600', color: C.ink, lineHeight: 34 }}>
-                  {amount.toFixed(1)}
-                </Text>
-                <Text style={{ fontSize: 12, color: C.pebble, marginTop: 2 }}>{MOCK.unit}</Text>
+              <View className="flex-1 items-center">
+                <Text className="text-4xl font-semibold text-ink leading-9">{amount.toFixed(1)}</Text>
               </View>
               <Pressable
-                onPress={() =>
-                  setAmount((p) => Math.min(MOCK.current, +(p + 0.5).toFixed(1)))
-                }
-                style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 12,
-                  backgroundColor: C.mist,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
+                onPress={() => setAmount((p) => +(p + 0.5).toFixed(1))}
+                className="w-13 h-13 rounded-xl bg-mist items-center justify-center shrink-0"
               >
-                <Text style={{ fontSize: 26, color: C.mint, lineHeight: 26, fontWeight: '300' }}>+</Text>
+                <Text className="text-3xl font-light leading-7" style={{ color: colors.mint }}>+</Text>
               </Pressable>
             </View>
           )}
@@ -321,26 +266,14 @@ export default function ScannerScreen() {
           {/* Confirm */}
           <Pressable
             onPress={() => router.back()}
-            style={{
-              width: '100%',
-              backgroundColor: C.forest,
-              borderRadius: 12,
-              paddingVertical: 14,
-              alignItems: 'center',
-              marginBottom: 10,
-            }}
+            className="w-full bg-forest rounded-xl py-3.5 items-center mb-2.5"
           >
-            <Text style={{ fontSize: 15, fontWeight: '600', color: C.cream }}>
-              Registrar consumo
-            </Text>
+            <Text className="text-base font-semibold text-cream">Registrar consumo</Text>
           </Pressable>
 
-          {/* Cancel */}
-          <Pressable
-            onPress={() => setShowSheet(false)}
-            style={{ width: '100%', paddingVertical: 6, alignItems: 'center' }}
-          >
-            <Text style={{ fontSize: 14, color: C.pebble }}>Cancelar</Text>
+          {/* Scan another */}
+          <Pressable onPress={handleScanAnother} className="w-full py-1.5 items-center">
+            <Text className="text-sm text-pebble">Escanear otro</Text>
           </Pressable>
         </View>
       )}

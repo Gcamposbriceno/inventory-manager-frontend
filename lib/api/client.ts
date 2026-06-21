@@ -1,4 +1,14 @@
-const BASE_URL = process.env.EXPO_PUBLIC_DEV_API_BASE_URL ?? process.env.EXPO_PUBLIC_API_BASE_URL ?? '';
+const BASE_URL = (
+  process.env.EXPO_PUBLIC_DEV_API_BASE_URL ??
+  process.env.EXPO_PUBLIC_API_BASE_URL ??
+  ''
+).replace(/\/+$/, '');
+
+if (!BASE_URL) {
+  throw new Error(
+    'Missing API base URL. Set EXPO_PUBLIC_API_BASE_URL (or EXPO_PUBLIC_DEV_API_BASE_URL) in your .env.'
+  );
+}
 
 export async function apiFetch<T>(
   path: string,

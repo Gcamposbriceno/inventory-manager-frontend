@@ -1,5 +1,5 @@
 import { DAYS, todayKey, usePlanner, type DayKey } from '@/context/PlannerContext';
-import { usePantry, usePantryProducts, useUpdatePantryStock } from '@/lib/api/pantries';
+import { usePantries, usePantryProducts, useUpdatePantryStock } from '@/lib/api/pantries';
 import { useProducts } from '@/lib/api/products';
 import { useProductTypes } from '@/lib/api/productTypes';
 import { usePublicRecipes, useRecipesMe } from '@/lib/api/recipes';
@@ -22,7 +22,7 @@ export default function PlanificadorScreen() {
   const [resolvedIngredients, setResolvedIngredients] = useState<any[]>([]);
   const { data: myRecipes = [] } = useRecipesMe();
   const { data: publicRecipes = [] } = usePublicRecipes();
-  const { data: pantries = [] } = usePantry();
+  const { data: pantries = [] } = usePantries();
   const [selectedPantryId, setSelectedPantryId] = useState<string | null>(null);
   const updateStock = useUpdatePantryStock();
   const { data: pantryProducts = [] } = usePantryProducts(selectedPantryId ?? '');

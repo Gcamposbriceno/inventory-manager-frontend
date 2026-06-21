@@ -2,6 +2,7 @@ import type { Recipe } from '@/types/recipe';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
+import { useThemeColors } from '@/hooks/useThemeColors';
 
 type Props = {
   recipe: Recipe;
@@ -9,6 +10,7 @@ type Props = {
 };
 
 export function RecipeCard({ recipe, mode }: Props) {
+  const colors = useThemeColors();
   const pathname =
     mode === 'mine'
       ? ('/recetas/[id]' as const)
@@ -29,17 +31,17 @@ export function RecipeCard({ recipe, mode }: Props) {
           </Text>
         </View>
         <View className="w-10 h-10 rounded-xl bg-mist dark:bg-[#0D2B1A] items-center justify-center">
-          <Ionicons name="restaurant-outline" size={18} color="#2D6A4F" />
+          <Ionicons name="restaurant-outline" size={18} color={colors.sage} />
         </View>
       </View>
 
       <View className="flex-row items-center gap-4 mt-3 pt-3 border-t border-stone dark:border-[#2E2E2C]">
         <View className="flex-row items-center gap-1.5">
-          <Ionicons name="time-outline" size={14} color="#9E9B95" />
+          <Ionicons name="time-outline" size={14} color={colors.muted} />
           <Text className="text-[12px] text-ink dark:text-[#F2F0EB]">{recipe.total_time_minutes}</Text>
         </View>
         <View className="flex-row items-center gap-1.5">
-          <Ionicons name="people-outline" size={14} color="#9E9B95" />
+          <Ionicons name="people-outline" size={14} color={colors.muted} />
           <Text className="text-[12px] text-ink dark:text-[#F2F0EB]">{recipe.servings}</Text>
         </View>
       </View>

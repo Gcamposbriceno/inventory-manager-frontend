@@ -1,3 +1,5 @@
+import { StockStepper } from '@/components/StockStepper';
+import { usePantryContext } from '@/context/PantryContext';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import {
   usePantries,
@@ -69,7 +71,7 @@ function PantryTypeProducts({
   typeName: string;
   pantryProducts: PantryProduct[];
 }) {
-  const { primary } = useThemeColors();
+  const { primary, muted, expired } = useThemeColors();
   const { data: typeProducts, isLoading } = useProductTypeProducts(typeName);
 
   const removeProduct = useRemovePantryProduct();
@@ -105,7 +107,7 @@ function PantryTypeProducts({
                   resizeMode="contain"
                 />
               ) : (
-                <Ionicons name="cube-outline" size={16} color="#9E9B95" />
+                <Ionicons name="cube-outline" size={16} color={muted} />
               )}
             </View>
 
@@ -121,37 +123,7 @@ function PantryTypeProducts({
             </View>
 
             {/* Stock stepper */}
-            <View className="flex-row items-center gap-1">
-              <Pressable
-                className="w-7 h-7 rounded-lg bg-stone dark:bg-[#2E2E2C] items-center justify-center active:opacity-60"
-                disabled={isUpdating || stock === 0}
-                onPress={() => updateStock.mutate({ pantryId, sku: p.sku, stock: stock - 1 })}
-              >
-                <Text className="text-[16px] font-light text-ink dark:text-[#F2F0EB] leading-none">
-                  −
-                </Text>
-              </Pressable>
-
-              <View className="w-8 items-center">
-                {isUpdating ? (
-                  <ActivityIndicator size="small" />
-                ) : (
-                  <Text className="text-[13px] font-bold text-ink dark:text-[#F2F0EB]">
-                    {stock}
-                  </Text>
-                )}
-              </View>
-
-              <Pressable
-                className="w-7 h-7 rounded-lg bg-stone dark:bg-[#2E2E2C] items-center justify-center active:opacity-60"
-                disabled={isUpdating}
-                onPress={() => updateStock.mutate({ pantryId, sku: p.sku, stock: stock + 1 })}
-              >
-                <Text className="text-[16px] font-light text-ink dark:text-[#F2F0EB] leading-none">
-                  +
-                </Text>
-              </Pressable>
-            </View>
+            <StockStepper pantryId={pantryId} sku={p.sku} stock={stock} />
 
             {/* Remove product */}
             <Pressable
@@ -160,9 +132,9 @@ function PantryTypeProducts({
               onPress={() => removeProduct.mutate({ pantryId, sku: p.sku })}
             >
               {isRemoving ? (
-                <ActivityIndicator size="small" color="#E76F51" />
+                <ActivityIndicator size="small" color={expired} />
               ) : (
-                <Ionicons name="trash-outline" size={13} color="#E76F51" />
+                <Ionicons name="trash-outline" size={13} color={expired} />
               )}
             </Pressable>
           </View>
@@ -214,7 +186,7 @@ function PantryTypeProducts({
             className="flex-row items-center gap-1 active:opacity-70"
             onPress={() => setConfirmRemove(true)}
           >
-            <Ionicons name="trash-outline" size={13} color="#E76F51" />
+            <Ionicons name="trash-outline" size={13} color={expired} />
             <Text className="text-[13px] font-medium text-expired">Eliminar tipo</Text>
           </Pressable>
         )}
@@ -308,15 +280,18 @@ function PantryTypeRow({
 type Filter = 'all' | 'critical' | 'ok';
 
 export default function DespensaScreen() {
-  const { warn } = useThemeColors();
+  const { warn, muted, cream } = useThemeColors();
+  const { activePantryId: pantryId } = usePantryContext();
+  const [selectedPantryId, setSelectedPantryId] = useState<string | null>(pantryId);
   const [filter, setFilter] = useState<Filter>('all');
   const [expandedTypeId, setExpandedTypeId] = useState<string | null>(null);
   const { data: pantries, isLoading: pantriesLoading } = usePantries();
-  const [selectedPantryId, setSelectedPantryId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!selectedPantryId && pantries?.length) {
-      setSelectedPantryId(pantries[0].id);
+    if (!pantries) return;
+    const stillExists = pantries.some((p) => p.id === selectedPantryId);
+    if (!stillExists) {
+      setSelectedPantryId(pantries[0]?.id ?? null);
     }
   }, [pantries, selectedPantryId]);
 
@@ -365,7 +340,7 @@ export default function DespensaScreen() {
                 )
               }
             >
-              <Ionicons name="share-social-outline" size={18} color="#9E9B95" />
+              <Ionicons name="share-social-outline" size={18} color={muted} />
             </Pressable>
           )}
         </View>
@@ -394,7 +369,7 @@ export default function DespensaScreen() {
               <Ionicons
                 name="storefront-outline"
                 size={14}
-                color={selectedPantryId === p.id ? '#F2F0EB' : '#9E9B95'}
+                color={selectedPantryId === p.id ? cream : muted}
               />
               <Text
                 className={
@@ -407,6 +382,15 @@ export default function DespensaScreen() {
               </Text>
             </Pressable>
           ))}
+
+          {/* Crear nueva despensa */}
+          <Pressable
+            onPress={() => router.push('/pantry-create')}
+            className="flex-row items-center gap-1.5 px-4 py-2 rounded-full bg-white dark:bg-[#1E1E1C] border border-dashed border-stone dark:border-[#2E2E2C] active:opacity-70"
+          >
+            <Ionicons name="add" size={16} color="#9E9B95" />
+            <Text className="text-[13px] font-medium text-pebble">Nueva</Text>
+          </Pressable>
         </ScrollView>
 
         {isLoading ? (
@@ -415,7 +399,7 @@ export default function DespensaScreen() {
           </View>
         ) : types.length === 0 ? (
           <View className="mx-5 rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] py-12 items-center gap-3">
-            <Ionicons name="basket-outline" size={48} color="#9E9B95" />
+            <Ionicons name="basket-outline" size={48} color={muted} />
             <Text className="text-[15px] font-semibold text-ink dark:text-[#F2F0EB]">
               Sin productos configurados
             </Text>
@@ -438,7 +422,7 @@ export default function DespensaScreen() {
                 <Text className="text-[28px] font-semibold leading-none text-amber-600 dark:text-amber-400">
                   {criticalCount}
                 </Text>
-                <Text className="text-[11px] font-medium text-pebble">Bajo mínimo</Text>
+                <Text className="text-[11px] font-medium text-pebble">Por reponer</Text>
               </View>
               <View className="w-px h-9 bg-stone dark:bg-[#2E2E2C]" />
               <View className="flex-1 items-center gap-1">
@@ -508,7 +492,7 @@ export default function DespensaScreen() {
             {/* Product type list */}
             {filtered.length === 0 ? (
               <View className="mx-5 rounded-2xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] py-10 items-center gap-2">
-                <Ionicons name="checkmark-circle-outline" size={48} color="#9E9B95" />
+                <Ionicons name="checkmark-circle-outline" size={48} color={muted} />
                 <Text className="text-[14px] text-pebble">Todo en orden</Text>
               </View>
             ) : (
@@ -548,7 +532,7 @@ export default function DespensaScreen() {
             )
           }
         >
-          <Ionicons name="add" size={28} color="#F2F0EB" />
+          <Ionicons name="add" size={28} color={cream} />
         </Pressable>
       )}
     </SafeAreaView>

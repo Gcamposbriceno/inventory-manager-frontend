@@ -1,5 +1,6 @@
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useThemeColors } from '@/hooks/useThemeColors';
 
 const WEEKS = [
   { label: 'Sem 23', val: 8  },
@@ -19,6 +20,7 @@ const TOP = [
 const CHART_H = 110;
 
 export default function HistorialScreen() {
+  const colors = useThemeColors();
   const maxVal = Math.max(...WEEKS.map((w) => w.val));
 
   return (
@@ -69,7 +71,7 @@ export default function HistorialScreen() {
                 <View key={w.label} className="flex-1 items-center justify-end">
                   <Text
                     className="text-[12px] font-semibold mb-1"
-                    style={{ color: isNow ? '#1B4332' : '#9E9B95' }}
+                    style={{ color: isNow ? colors.primary : colors.muted }}
                   >
                     {w.val}
                   </Text>
@@ -77,7 +79,7 @@ export default function HistorialScreen() {
                     className="w-full rounded-xl"
                     style={{
                       height: barH,
-                      backgroundColor: isNow ? '#1B4332' : '#52B788',
+                      backgroundColor: isNow ? colors.primary : colors.mint,
                       opacity: isNow ? 1 : 0.85,
                     }}
                   />
@@ -117,7 +119,7 @@ export default function HistorialScreen() {
                   className="h-full rounded-full"
                   style={{
                     width: `${item.pct}%`,
-                    backgroundColor: i === 0 ? '#1B4332' : '#52B788',
+                    backgroundColor: i === 0 ? colors.primary : colors.mint,
                   }}
                 />
               </View>

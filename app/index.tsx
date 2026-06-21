@@ -28,8 +28,6 @@ export default function LoginScreen() {
         await setActive({
           session: result.createdSessionId,
         });
-
-        router.push('/pantry-setup');
       } else {
         console.log('Clerk sign-in status inesperado:', result.status);
         alert(`Autenticación incompleta (estado: ${result.status}). Intenta de nuevo.`);
