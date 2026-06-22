@@ -1,4 +1,5 @@
 import { useUpdatePantryStock } from '@/lib/api/pantries';
+import { formatQty } from '@/lib/helpers/quantity';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
@@ -73,7 +74,7 @@ export function StockStepper({ pantryId, sku, stock }: Props) {
       </Pressable>
 
       <View className="w-8 items-center">
-        <Text className="text-[13px] font-bold text-ink dark:text-[#F2F0EB]">{value}</Text>
+        <Text className="text-[13px] font-bold text-ink dark:text-[#F2F0EB]">{formatQty(value)}</Text>
       </View>
 
       <Pressable

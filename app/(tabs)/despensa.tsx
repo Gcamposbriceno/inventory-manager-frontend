@@ -10,6 +10,7 @@ import {
   useUpdatePantryStock,
 } from '@/lib/api/pantries';
 import { useProductTypeProducts } from '@/lib/api/productTypes';
+import { formatQty } from '@/lib/helpers/quantity';
 import type { PantryProduct, PantryTypeOverview } from '@/types/pantry';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -240,8 +241,8 @@ function PantryTypeRow({
               {row.type_name}
             </Text>
             <Text className="text-[12px] text-pebble mt-0.5">
-              {row.current_stock} / {row.desired_stock} {row.measurement_unit}
-              {status === 'low' ? `  ·  mín. ${row.rop}` : ''}
+              {formatQty(row.current_stock)} / {formatQty(row.desired_stock)} {row.measurement_unit}
+              {status === 'low' ? `  ·  mín. ${formatQty(row.rop)}` : ''}
             </Text>
           </View>
         </View>

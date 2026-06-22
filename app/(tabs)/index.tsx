@@ -162,9 +162,6 @@ export default function HomeScreen() {
               <Text className="text-[13px] text-pebble mt-0.5 capitalize">{formattedDate()}</Text>
             </View>
             <View className="flex-row items-center gap-2">
-              <Pressable className="w-10 h-10 rounded-full bg-white dark:bg-[#1E1E1C] border border-stone dark:border-[#2E2E2C] items-center justify-center active:opacity-70">
-                <Ionicons name="notifications-outline" size={20} color={muted} />
-              </Pressable>
               <Pressable
                 onPress={() => router.push('/settings')}
                 className="w-10 h-10 rounded-full bg-white dark:bg-[#1E1E1C] border border-stone dark:border-[#2E2E2C] items-center justify-center active:opacity-70"

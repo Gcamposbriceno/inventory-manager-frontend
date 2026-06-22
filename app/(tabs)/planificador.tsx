@@ -4,7 +4,7 @@ import { useProducts } from '@/lib/api/products';
 import { useProductTypes } from '@/lib/api/productTypes';
 import { usePublicRecipes, useRecipesMe } from '@/lib/api/recipes';
 import { resolveMealIngredients } from '@/lib/helpers/resolveMealIngredients';
-import { resolveStockConsumption } from '@/lib/helpers/resolveStockConsumption';
+import { findStockShortages, resolveStockConsumption } from '@/lib/helpers/resolveStockConsumption';
 import { ProductType } from '@/types/productType';
 import type { Recipe } from '@/types/recipe';
 import { Ionicons } from '@expo/vector-icons';
@@ -26,6 +26,7 @@ export default function PlanificadorScreen() {
   const { data: publicRecipes = [] } = usePublicRecipes();
   const { data: pantries = [] } = usePantries();
   const [selectedPantryId, setSelectedPantryId] = useState<string | null>(null);
+  const [confirmingShortage, setConfirmingShortage] = useState(false);
   const updateStock = useUpdatePantryStock();
   const { data: pantryProducts = [] } = usePantryProducts(selectedPantryId ?? '');
   const { data: allProducts = [], isLoading: productsLoading } = useProducts();
@@ -59,8 +60,17 @@ export default function PlanificadorScreen() {
       ),
     [productTypes]
   );
-  const productBySku = new Map(
-  allProducts.map(p => [p.sku, p])
+  const productBySku = useMemo(
+    () => new Map(allProducts.map(p => [p.sku, p])),
+    [allProducts]
+  );
+  const shortages = useMemo(() => {
+    if (!selectedMeal || !selectedPantryId) return [];
+    const factor = selectedMeal.porciones / selectedMeal.servings;
+    return findStockShortages(selectedMeal.ingredientes ?? [], factor, pantryProducts, productBySku);
+  }, [selectedMeal, selectedPantryId, pantryProducts, productBySku]);
+  const shortageNames = shortages.map(
+    (s) => productTypeMap[s.type_id]?.name ?? 'Desconocido',
   );
   async function openCookModal(meal: any) {
     const factor = meal.porciones / meal.servings;
@@ -76,6 +86,7 @@ export default function PlanificadorScreen() {
       factor,
     });
     setSelectedPantryId(null);
+    setConfirmingShortage(false);
     setCookModalOpen(true);
   }
 
@@ -356,7 +367,10 @@ export default function PlanificadorScreen() {
               return (
                 <Pressable
                   key={pantry.id}
-                  onPress={() => setSelectedPantryId(pantry.id)}
+                  onPress={() => {
+                    setSelectedPantryId(pantry.id);
+                    setConfirmingShortage(false);
+                  }}
                   className={`px-4 py-2 rounded-xl border ${
                     selected
                       ? 'bg-mist dark:bg-[#0D2B1A] border-sage'
@@ -406,9 +420,19 @@ export default function PlanificadorScreen() {
             )}
           </View>
 
-          <Text className="text-[14px] text-pebble mt-4">
-            ¿Deseas marcar &quot;{selectedMeal?.name}&quot; como cocinada?
-          </Text>
+          {confirmingShortage ? (
+            <View className="flex-row items-start gap-2 bg-amber-50 dark:bg-amber-950 rounded-xl px-3.5 py-2.5 mt-4">
+              <Ionicons name="warning-outline" size={16} color="#DC2626" />
+              <Text className="text-[13px] text-red-600 dark:text-red-400 flex-1">
+                No tienes suficiente {shortageNames.join(', ')} para esta receta. El resto de los
+                productos disponibles se descontará igualmente. ¿Quieres continuar?
+              </Text>
+            </View>
+          ) : (
+            <Text className="text-[14px] text-pebble mt-4">
+              ¿Deseas marcar &quot;{selectedMeal?.name}&quot; como cocinada?
+            </Text>
+          )}
 
           <View className="flex-row justify-end gap-3 mt-5">
             <Pressable
@@ -416,6 +440,7 @@ export default function PlanificadorScreen() {
                 setCookModalOpen(false);
                 setSelectedMeal(null);
                 setSelectedPantryId(null);
+                setConfirmingShortage(false);
               }}
               className="px-4 py-2"
             >
@@ -426,6 +451,11 @@ export default function PlanificadorScreen() {
             disabled={!selectedPantryId || productsLoading}
             onPress={async () => {
               if (!selectedPantryId || !selectedMeal) return;
+
+              if (shortages.length > 0 && !confirmingShortage) {
+                setConfirmingShortage(true);
+                return;
+              }
 
               const factor = selectedMeal.porciones / selectedMeal.servings;
 
@@ -447,6 +477,7 @@ export default function PlanificadorScreen() {
               setCookModalOpen(false);
               setSelectedMeal(null);
               setSelectedPantryId(null);
+              setConfirmingShortage(false);
             }}
             className={`px-4 py-2 rounded-lg ${
               selectedPantryId ? 'bg-forest' : 'bg-stone dark:bg-[#2E2E2C]'
@@ -457,7 +488,7 @@ export default function PlanificadorScreen() {
                 selectedPantryId ? 'text-cream' : 'text-pebble'
               }`}
             >
-              Confirmar
+              {confirmingShortage ? 'Sí, continuar' : 'Confirmar'}
             </Text>
           </Pressable>
           </View>

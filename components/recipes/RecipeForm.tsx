@@ -3,7 +3,7 @@ import { RecipeFormData } from '@/types/recipeForm';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
@@ -146,9 +146,14 @@ export function RecipeForm({
 
   return (
     <SafeAreaView className="flex-1 bg-cream dark:bg-[#161614]" edges={['top']}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        className="flex-1"
+      >
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerClassName="px-5 pt-2 pb-10"
+        keyboardShouldPersistTaps="handled"
       >
         <View className="flex-row items-center mb-6">
           <Pressable
@@ -187,12 +192,12 @@ export function RecipeForm({
 
           <View>
             <Text className="text-[11px] font-medium uppercase tracking-wide text-pebble mb-1.5">
-              Descripción
+              Preparación
             </Text>
             <TextInput
               value={description}
               onChangeText={setDescription}
-              placeholder="Describe la receta"
+              placeholder="Describe la preparación de la receta"
               multiline
               numberOfLines={4}
               className="rounded-xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] px-4 py-3 text-ink dark:text-[#F2F0EB]"
@@ -452,6 +457,7 @@ export function RecipeForm({
             </Pressable>
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
