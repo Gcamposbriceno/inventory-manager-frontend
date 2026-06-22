@@ -3,17 +3,8 @@ import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAllPantriesOverview, usePantries } from '@/lib/api/pantries';
-import type { PantryTypeOverview } from '@/types/pantry';
+import { getItemStatus, getNeededQuantity, type ItemStatus } from '@/lib/helpers/shoppingListItem';
 import { useThemeColors } from '@/hooks/useThemeColors';
-
-type ItemStatus = 'empty' | 'low' | 'partial';
-
-function getItemStatus(t: PantryTypeOverview): ItemStatus | null {
-  if (t.current_stock >= t.desired_stock) return null;
-  if (t.current_stock === 0) return 'empty';
-  if (t.current_stock < t.rop) return 'low';
-  return 'partial';
-}
 
 interface ListItem {
   key: string;
@@ -144,7 +135,7 @@ export default function ListaScreen() {
     overview.forEach((t) => {
       const status = getItemStatus(t);
       if (!status) return;
-      const needed = +(t.desired_stock - t.current_stock).toFixed(2);
+      const needed = getNeededQuantity(t);
       allItems.push({
         key: `${p.id}-${t.type_id}`,
         type_name: t.type_name,

@@ -3,6 +3,8 @@ import { usePantries, usePantryProducts, useUpdatePantryStock } from '@/lib/api/
 import { useProducts } from '@/lib/api/products';
 import { useProductTypes } from '@/lib/api/productTypes';
 import { usePublicRecipes, useRecipesMe } from '@/lib/api/recipes';
+import { resolveMealIngredients } from '@/lib/helpers/resolveMealIngredients';
+import { resolveStockConsumption } from '@/lib/helpers/resolveStockConsumption';
 import { ProductType } from '@/types/productType';
 import type { Recipe } from '@/types/recipe';
 import { Ionicons } from '@expo/vector-icons';
@@ -63,16 +65,8 @@ export default function PlanificadorScreen() {
   async function openCookModal(meal: any) {
     const factor = meal.porciones / meal.servings;
 
-    const ingredients = (meal.ingredientes ?? []).map((ingredient: any) => {
-      const type = productTypeMap[ingredient.type_id];
+    const ingredients = resolveMealIngredients(meal.ingredientes ?? [], factor, productTypeMap);
 
-      return {
-        name: type?.name ?? 'Desconocido',
-        amount: ingredient.amount * factor,
-        unit: type?.measurement_unit ?? null,
-      };
-    });
-    
     const totalIngredients = ingredients.length;
 
     setResolvedIngredients(ingredients);
@@ -435,55 +429,19 @@ export default function PlanificadorScreen() {
 
               const factor = selectedMeal.porciones / selectedMeal.servings;
 
-              const stockOverrides = new Map<string, number>();
-              const getStock = (sku: string) =>
-                stockOverrides.get(sku) ??
-                pantryProducts.find(p => p.product_sku === sku)?.stock ??
-                0;
+              const updates = resolveStockConsumption(
+                selectedMeal.ingredientes,
+                factor,
+                pantryProducts,
+                productBySku,
+              );
 
-              for (const ingredient of selectedMeal.ingredientes) {
-                let remaining = ingredient.amount * factor;
-
-                const targetSku = ingredient.preferred_product_sku;
-                const targetTypeId = targetSku
-                  ? productBySku.get(targetSku)?.product_type_name
-                  : undefined;
-
-                const candidates = pantryProducts
-                  .map(p => {
-                    const info = productBySku.get(p.product_sku);
-                    const unit = info?.unit_multiplier_un ?? 1;
-                    const stock = getStock(p.product_sku);
-
-                    return {
-                      sku: p.product_sku,
-                      unit,
-                      type: info?.product_type_name,
-                      stock,
-                      availableBase: stock * unit,
-                    };
-                  })
-                  .filter(p => p.availableBase > 0 && (p.sku === targetSku || p.type === targetTypeId))
-                  .sort((a, b) =>
-                    a.sku === targetSku ? -1 : b.sku === targetSku ? 1 : b.availableBase - a.availableBase,
-                  );
-
-                for (const product of candidates) {
-                  if (remaining <= 0) break;
-
-                  const consumeBase = Math.min(product.availableBase, remaining);
-                  const unitsToRemove = Math.ceil(consumeBase / product.unit);
-                  const newStock = Math.max(0, product.stock - unitsToRemove);
-
-                  await updateStock.mutateAsync({
-                    pantryId: selectedPantryId,
-                    sku: product.sku,
-                    stock: Number(newStock.toFixed(3)),
-                  });
-
-                  stockOverrides.set(product.sku, newStock);
-                  remaining -= consumeBase;
-                }
+              for (const update of updates) {
+                await updateStock.mutateAsync({
+                  pantryId: selectedPantryId,
+                  sku: update.sku,
+                  stock: update.stock,
+                });
               }
 
               setCookModalOpen(false);
