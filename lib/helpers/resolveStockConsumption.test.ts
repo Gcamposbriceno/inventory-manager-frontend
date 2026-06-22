@@ -74,8 +74,19 @@ describe('resolveStockConsumption', () => {
       new Map([['SKU-A', { product_type_name: 'arroz', unit_multiplier_un: 1000 }]]),
     );
 
-    // ceil(1500/1000) = 2 units removed
-    expect(updates).toEqual([{ sku: 'SKU-A', stock: 1 }]);
+    expect(updates).toEqual([{ sku: 'SKU-A', stock: 1.5 }]);
+  });
+
+  it('only deducts the fraction of a unit actually needed', () => {
+    // 1 unit of SKU-A = 1kg (e.g. 1 bag of sugar), need 0.3kg
+    const updates = resolveStockConsumption(
+      [ingredient({ amount: 0.3 })],
+      1,
+      [{ product_sku: 'SKU-A', stock: 1 }],
+      new Map([['SKU-A', { product_type_name: 'azucar', unit_multiplier_un: 1 }]]),
+    );
+
+    expect(updates).toEqual([{ sku: 'SKU-A', stock: 0.7 }]);
   });
 
   it('never drops stock below 0 even if not enough is available', () => {

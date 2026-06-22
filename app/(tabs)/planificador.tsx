@@ -10,7 +10,7 @@ import type { Recipe } from '@/types/recipe';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function PlanificadorScreen() {
@@ -27,6 +27,7 @@ export default function PlanificadorScreen() {
   const { data: pantries = [] } = usePantries();
   const [selectedPantryId, setSelectedPantryId] = useState<string | null>(null);
   const [confirmingShortage, setConfirmingShortage] = useState(false);
+  const [isCooking, setIsCooking] = useState(false);
   const updateStock = useUpdatePantryStock();
   const { data: pantryProducts = [] } = usePantryProducts(selectedPantryId ?? '');
   const { data: allProducts = [], isLoading: productsLoading } = useProducts();
@@ -87,6 +88,7 @@ export default function PlanificadorScreen() {
     });
     setSelectedPantryId(null);
     setConfirmingShortage(false);
+    setIsCooking(false);
     setCookModalOpen(true);
   }
 
@@ -436,6 +438,7 @@ export default function PlanificadorScreen() {
 
           <View className="flex-row justify-end gap-3 mt-5">
             <Pressable
+              disabled={isCooking}
               onPress={() => {
                 setCookModalOpen(false);
                 setSelectedMeal(null);
@@ -448,7 +451,7 @@ export default function PlanificadorScreen() {
             </Pressable>
 
           <Pressable
-            disabled={!selectedPantryId || productsLoading}
+            disabled={!selectedPantryId || productsLoading || isCooking}
             onPress={async () => {
               if (!selectedPantryId || !selectedMeal) return;
 
@@ -457,39 +460,55 @@ export default function PlanificadorScreen() {
                 return;
               }
 
-              const factor = selectedMeal.porciones / selectedMeal.servings;
+              const mealName = selectedMeal.name;
+              setIsCooking(true);
+              try {
+                const factor = selectedMeal.porciones / selectedMeal.servings;
 
-              const updates = resolveStockConsumption(
-                selectedMeal.ingredientes,
-                factor,
-                pantryProducts,
-                productBySku,
-              );
+                const updates = resolveStockConsumption(
+                  selectedMeal.ingredientes,
+                  factor,
+                  pantryProducts,
+                  productBySku,
+                );
 
-              for (const update of updates) {
-                await updateStock.mutateAsync({
-                  pantryId: selectedPantryId,
-                  sku: update.sku,
-                  stock: update.stock,
-                });
+                for (const update of updates) {
+                  await updateStock.mutateAsync({
+                    pantryId: selectedPantryId,
+                    sku: update.sku,
+                    stock: update.stock,
+                  });
+                }
+
+                setCookModalOpen(false);
+                setSelectedMeal(null);
+                setSelectedPantryId(null);
+                setConfirmingShortage(false);
+                Alert.alert('¡Listo!', `Se marcó "${mealName}" como cocinada y se actualizó tu despensa.`);
+              } catch {
+                Alert.alert(
+                  'No se pudo actualizar',
+                  'Ocurrió un error al actualizar tu despensa. Intenta de nuevo.',
+                );
+              } finally {
+                setIsCooking(false);
               }
-
-              setCookModalOpen(false);
-              setSelectedMeal(null);
-              setSelectedPantryId(null);
-              setConfirmingShortage(false);
             }}
             className={`px-4 py-2 rounded-lg ${
               selectedPantryId ? 'bg-forest' : 'bg-stone dark:bg-[#2E2E2C]'
             }`}
           >
-            <Text
-              className={`font-semibold ${
-                selectedPantryId ? 'text-cream' : 'text-pebble'
-              }`}
-            >
-              {confirmingShortage ? 'Sí, continuar' : 'Confirmar'}
-            </Text>
+            {isCooking ? (
+              <ActivityIndicator size="small" color="#F8F7F4" />
+            ) : (
+              <Text
+                className={`font-semibold ${
+                  selectedPantryId ? 'text-cream' : 'text-pebble'
+                }`}
+              >
+                {confirmingShortage ? 'Sí, continuar' : 'Confirmar'}
+              </Text>
+            )}
           </Pressable>
           </View>
 

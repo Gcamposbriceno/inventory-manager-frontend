@@ -72,7 +72,7 @@ export function resolveStockConsumption(
       if (remaining <= 0) break;
 
       const consumeBase = Math.min(product.availableBase, remaining);
-      const unitsToRemove = Math.ceil(consumeBase / product.unit);
+      const unitsToRemove = consumeBase / product.unit;
       const newStock = Math.max(0, product.stock - unitsToRemove);
 
       if (!stockOverrides.has(product.sku)) order.push(product.sku);
