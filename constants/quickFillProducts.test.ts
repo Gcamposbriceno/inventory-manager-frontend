@@ -34,4 +34,11 @@ describe('QUICK_FILL_PRODUCTS', () => {
       expect(KNOWN_CATEGORIES.has(p.category)).toBe(true);
     });
   });
+
+  it('ids are sequential starting from 1', () => {
+    const sorted = [...QUICK_FILL_PRODUCTS].sort((a, b) => a.id - b.id);
+    sorted.forEach((p, i) => {
+      expect(p.id).toBe(i + 1);
+    });
+  });
 });
