@@ -10,6 +10,7 @@
       "channel": "development",
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "https://inventory-manager-backend-zd9h.onrender.com/",
+        "EXPO_PUBLIC_DEV_API_BASE_URL": "https://inventory-manager-backend-zd9h.onrender.com/",
         "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_bW92aW5nLWhvbmV5YmVlLTkzLmNsZXJrLmFjY291bnRzLmRldiQ"
       }
     },
@@ -21,6 +22,7 @@
       },
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "https://inventory-manager-backend-zd9h.onrender.com/",
+        "EXPO_PUBLIC_DEV_API_BASE_URL": "https://inventory-manager-backend-zd9h.onrender.com/",
         "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_bW92aW5nLWhvbmV5YmVlLTkzLmNsZXJrLmFjY291bnRzLmRldiQ"
       }
     },
@@ -29,6 +31,7 @@
       "channel": "production",
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "https://inventory-manager-backend-zd9h.onrender.com/",
+        "EXPO_PUBLIC_DEV_API_BASE_URL": "https://inventory-manager-backend-zd9h.onrender.com/",
         "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_bW92aW5nLWhvbmV5YmVlLTkzLmNsZXJrLmFjY291bnRzLmRldiQ"
       }
     }
