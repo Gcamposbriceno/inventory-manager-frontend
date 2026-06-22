@@ -403,8 +403,8 @@ export default function PantryAddTypeScreen() {
   const stepSize = STEP_SIZE[unitKey] ?? 1;
   const dec = DECIMALS[unitKey] ?? 0;
 
-  const desInvalid = desiredStock > 0 && desiredStock < rop;
-  const canContinue = rop > 0 && desiredStock >= rop;
+  const desInvalid = rop > 0 && desiredStock <= rop;
+  const canContinue = rop > 0 && desiredStock > rop;
 
   const filtered = (allTypes ?? []).filter((t) =>
     t.name.toLowerCase().includes(search.toLowerCase())
@@ -556,7 +556,7 @@ export default function PantryAddTypeScreen() {
             <View className="flex-row items-center gap-2 bg-red-50 dark:bg-red-950 rounded-xl px-3.5 py-2.5 mb-5">
               <Ionicons name="warning-outline" size={16} color="#DC2626" />
               <Text className="text-[13px] text-red-600 dark:text-red-400 flex-1">
-                El stock deseado debe ser mayor o igual al mínimo.
+                El stock deseado debe ser mayor que el mínimo.
               </Text>
             </View>
           )}

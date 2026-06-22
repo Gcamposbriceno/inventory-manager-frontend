@@ -1,4 +1,4 @@
-import { parseValidQty } from './quantity';
+import { formatQty, parseValidQty } from './quantity';
 
 describe('parseValidQty', () => {
   it('parses valid numeric string', () => {
@@ -21,5 +21,19 @@ describe('parseValidQty', () => {
   it('respects custom min and max options', () => {
     expect(parseValidQty('0', { min: 0, max: 10 })).toBe(0);
     expect(parseValidQty('15', { min: 1, max: 10 })).toBe(10);
+  });
+});
+
+describe('formatQty', () => {
+  it('strips floating-point noise', () => {
+    expect(formatQty(1.4000000000000001)).toBe('1.4');
+  });
+
+  it('drops trailing zeros', () => {
+    expect(formatQty(1)).toBe('1');
+  });
+
+  it('respects custom decimal precision', () => {
+    expect(formatQty(1.23456, 3)).toBe('1.235');
   });
 });

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import React from 'react';
-import ListaScreen from './lista';
+import ListaScreen from '@/app/(tabs)/lista';
 import type { Pantry, PantryTypeOverview } from '@/types/pantry';
 
 const pantries: Pantry[] = [
@@ -46,6 +46,12 @@ jest.mock('@/lib/api/pantries', () => ({
   usePantries: () => ({ data: pantries, isLoading: false }),
   useAllPantriesOverview: (ps: Pantry[]) =>
     ps.map((p) => ({ data: overviewByPantry[p.id] ?? [], isLoading: false })),
+  useAllPantriesProducts: (ps: Pantry[]) => ps.map(() => ({ data: [], isLoading: false })),
+  useUpdatePantryStock: () => ({ mutateAsync: jest.fn() }),
+}));
+
+jest.mock('@/lib/api/products', () => ({
+  useProducts: () => ({ data: [], isLoading: false }),
 }));
 
 describe('ListaScreen', () => {
@@ -75,6 +81,6 @@ describe('ListaScreen', () => {
     fireEvent.press(screen.getByText('Arroz'));
 
     expect(screen.getByText('2 de 3 pendientes')).toBeTruthy();
-    expect(screen.getByText('Limpiar 1 marcado')).toBeTruthy();
+    expect(screen.getByText('Registrar compra de 1 producto')).toBeTruthy();
   });
 });
