@@ -4,13 +4,13 @@ import { useProducts } from '@/lib/api/products';
 import { useProductTypes } from '@/lib/api/productTypes';
 import { usePublicRecipes, useRecipesMe } from '@/lib/api/recipes';
 import { resolveMealIngredients } from '@/lib/helpers/resolveMealIngredients';
-import { resolveStockConsumption } from '@/lib/helpers/resolveStockConsumption';
+import { findStockShortages, resolveStockConsumption } from '@/lib/helpers/resolveStockConsumption';
 import { ProductType } from '@/types/productType';
 import type { Recipe } from '@/types/recipe';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function PlanificadorScreen() {
@@ -26,6 +26,8 @@ export default function PlanificadorScreen() {
   const { data: publicRecipes = [] } = usePublicRecipes();
   const { data: pantries = [] } = usePantries();
   const [selectedPantryId, setSelectedPantryId] = useState<string | null>(null);
+  const [confirmingShortage, setConfirmingShortage] = useState(false);
+  const [isCooking, setIsCooking] = useState(false);
   const updateStock = useUpdatePantryStock();
   const { data: pantryProducts = [] } = usePantryProducts(selectedPantryId ?? '');
   const { data: allProducts = [], isLoading: productsLoading } = useProducts();
@@ -59,8 +61,17 @@ export default function PlanificadorScreen() {
       ),
     [productTypes]
   );
-  const productBySku = new Map(
-  allProducts.map(p => [p.sku, p])
+  const productBySku = useMemo(
+    () => new Map(allProducts.map(p => [p.sku, p])),
+    [allProducts]
+  );
+  const shortages = useMemo(() => {
+    if (!selectedMeal || !selectedPantryId) return [];
+    const factor = selectedMeal.porciones / selectedMeal.servings;
+    return findStockShortages(selectedMeal.ingredientes ?? [], factor, pantryProducts, productBySku);
+  }, [selectedMeal, selectedPantryId, pantryProducts, productBySku]);
+  const shortageNames = shortages.map(
+    (s) => productTypeMap[s.type_id]?.name ?? 'Desconocido',
   );
   async function openCookModal(meal: any) {
     const factor = meal.porciones / meal.servings;
@@ -76,6 +87,8 @@ export default function PlanificadorScreen() {
       factor,
     });
     setSelectedPantryId(null);
+    setConfirmingShortage(false);
+    setIsCooking(false);
     setCookModalOpen(true);
   }
 
@@ -356,7 +369,10 @@ export default function PlanificadorScreen() {
               return (
                 <Pressable
                   key={pantry.id}
-                  onPress={() => setSelectedPantryId(pantry.id)}
+                  onPress={() => {
+                    setSelectedPantryId(pantry.id);
+                    setConfirmingShortage(false);
+                  }}
                   className={`px-4 py-2 rounded-xl border ${
                     selected
                       ? 'bg-mist dark:bg-[#0D2B1A] border-sage'
@@ -406,16 +422,28 @@ export default function PlanificadorScreen() {
             )}
           </View>
 
-          <Text className="text-[14px] text-pebble mt-4">
-            ¿Deseas marcar &quot;{selectedMeal?.name}&quot; como cocinada?
-          </Text>
+          {confirmingShortage ? (
+            <View className="flex-row items-start gap-2 bg-amber-50 dark:bg-amber-950 rounded-xl px-3.5 py-2.5 mt-4">
+              <Ionicons name="warning-outline" size={16} color="#DC2626" />
+              <Text className="text-[13px] text-red-600 dark:text-red-400 flex-1">
+                No tienes suficiente {shortageNames.join(', ')} para esta receta. El resto de los
+                productos disponibles se descontará igualmente. ¿Quieres continuar?
+              </Text>
+            </View>
+          ) : (
+            <Text className="text-[14px] text-pebble mt-4">
+              ¿Deseas marcar &quot;{selectedMeal?.name}&quot; como cocinada?
+            </Text>
+          )}
 
           <View className="flex-row justify-end gap-3 mt-5">
             <Pressable
+              disabled={isCooking}
               onPress={() => {
                 setCookModalOpen(false);
                 setSelectedMeal(null);
                 setSelectedPantryId(null);
+                setConfirmingShortage(false);
               }}
               className="px-4 py-2"
             >
@@ -423,42 +451,64 @@ export default function PlanificadorScreen() {
             </Pressable>
 
           <Pressable
-            disabled={!selectedPantryId || productsLoading}
+            disabled={!selectedPantryId || productsLoading || isCooking}
             onPress={async () => {
               if (!selectedPantryId || !selectedMeal) return;
 
-              const factor = selectedMeal.porciones / selectedMeal.servings;
-
-              const updates = resolveStockConsumption(
-                selectedMeal.ingredientes,
-                factor,
-                pantryProducts,
-                productBySku,
-              );
-
-              for (const update of updates) {
-                await updateStock.mutateAsync({
-                  pantryId: selectedPantryId,
-                  sku: update.sku,
-                  stock: update.stock,
-                });
+              if (shortages.length > 0 && !confirmingShortage) {
+                setConfirmingShortage(true);
+                return;
               }
 
-              setCookModalOpen(false);
-              setSelectedMeal(null);
-              setSelectedPantryId(null);
+              const mealName = selectedMeal.name;
+              setIsCooking(true);
+              try {
+                const factor = selectedMeal.porciones / selectedMeal.servings;
+
+                const updates = resolveStockConsumption(
+                  selectedMeal.ingredientes,
+                  factor,
+                  pantryProducts,
+                  productBySku,
+                );
+
+                for (const update of updates) {
+                  await updateStock.mutateAsync({
+                    pantryId: selectedPantryId,
+                    sku: update.sku,
+                    stock: update.stock,
+                  });
+                }
+
+                setCookModalOpen(false);
+                setSelectedMeal(null);
+                setSelectedPantryId(null);
+                setConfirmingShortage(false);
+                Alert.alert('¡Listo!', `Se marcó "${mealName}" como cocinada y se actualizó tu despensa.`);
+              } catch {
+                Alert.alert(
+                  'No se pudo actualizar',
+                  'Ocurrió un error al actualizar tu despensa. Intenta de nuevo.',
+                );
+              } finally {
+                setIsCooking(false);
+              }
             }}
             className={`px-4 py-2 rounded-lg ${
               selectedPantryId ? 'bg-forest' : 'bg-stone dark:bg-[#2E2E2C]'
             }`}
           >
-            <Text
-              className={`font-semibold ${
-                selectedPantryId ? 'text-cream' : 'text-pebble'
-              }`}
-            >
-              Confirmar
-            </Text>
+            {isCooking ? (
+              <ActivityIndicator size="small" color="#F8F7F4" />
+            ) : (
+              <Text
+                className={`font-semibold ${
+                  selectedPantryId ? 'text-cream' : 'text-pebble'
+                }`}
+              >
+                {confirmingShortage ? 'Sí, continuar' : 'Confirmar'}
+              </Text>
+            )}
           </Pressable>
           </View>
 

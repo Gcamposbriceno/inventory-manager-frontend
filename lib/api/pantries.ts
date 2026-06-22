@@ -178,6 +178,17 @@ export function usePantryProducts(pantryId: string) {
   });
 }
 
+export function useAllPantriesProducts(pantries: Pantry[]) {
+  const apiFetch = useApiFetch();
+  return useQueries({
+    queries: pantries.map((p) => ({
+      queryKey: pantryKeys.products(p.id),
+      queryFn: () => apiFetch<PantryProduct[]>(`/pantries/${p.id}/products`),
+      enabled: !!p.id,
+    })),
+  });
+}
+
 export function useAddPantryProduct() {
   const apiFetch = useApiFetch();
   const queryClient = useQueryClient();

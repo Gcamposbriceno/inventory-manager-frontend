@@ -1,4 +1,4 @@
-import { resolveStockConsumption } from './resolveStockConsumption';
+import { findStockShortages, resolveStockConsumption } from './resolveStockConsumption';
 import type { RecipeIngredient } from '@/types/recipe';
 
 function ingredient(overrides: Partial<RecipeIngredient> = {}): RecipeIngredient {
@@ -74,8 +74,19 @@ describe('resolveStockConsumption', () => {
       new Map([['SKU-A', { product_type_name: 'arroz', unit_multiplier_un: 1000 }]]),
     );
 
-    // ceil(1500/1000) = 2 units removed
-    expect(updates).toEqual([{ sku: 'SKU-A', stock: 1 }]);
+    expect(updates).toEqual([{ sku: 'SKU-A', stock: 1.5 }]);
+  });
+
+  it('only deducts the fraction of a unit actually needed', () => {
+    // 1 unit of SKU-A = 1kg (e.g. 1 bag of sugar), need 0.3kg
+    const updates = resolveStockConsumption(
+      [ingredient({ amount: 0.3 })],
+      1,
+      [{ product_sku: 'SKU-A', stock: 1 }],
+      new Map([['SKU-A', { product_type_name: 'azucar', unit_multiplier_un: 1 }]]),
+    );
+
+    expect(updates).toEqual([{ sku: 'SKU-A', stock: 0.7 }]);
   });
 
   it('never drops stock below 0 even if not enough is available', () => {
@@ -109,5 +120,57 @@ describe('resolveStockConsumption', () => {
     );
 
     expect(updates).toEqual([]);
+  });
+});
+
+describe('findStockShortages', () => {
+  it('reports no shortage when stock fully covers the ingredient', () => {
+    const shortages = findStockShortages(
+      [ingredient({ amount: 2 })],
+      1,
+      [{ product_sku: 'SKU-A', stock: 10 }],
+      new Map([['SKU-A', { product_type_name: 'arroz', unit_multiplier_un: 1 }]]),
+    );
+
+    expect(shortages).toEqual([]);
+  });
+
+  it('reports the missing amount when stock is insufficient', () => {
+    const shortages = findStockShortages(
+      [ingredient({ amount: 5, type_id: 'type-1' })],
+      1,
+      [{ product_sku: 'SKU-A', stock: 2 }],
+      new Map([['SKU-A', { product_type_name: 'arroz', unit_multiplier_un: 1 }]]),
+    );
+
+    expect(shortages).toEqual([{ type_id: 'type-1', missingBase: 3 }]);
+  });
+
+  it('sums stock across fallback products of the same type before reporting a shortage', () => {
+    const shortages = findStockShortages(
+      [ingredient({ amount: 5 })],
+      1,
+      [
+        { product_sku: 'SKU-A', stock: 1 },
+        { product_sku: 'SKU-B', stock: 10 },
+      ],
+      new Map([
+        ['SKU-A', { product_type_name: 'arroz', unit_multiplier_un: 1 }],
+        ['SKU-B', { product_type_name: 'arroz', unit_multiplier_un: 1 }],
+      ]),
+    );
+
+    expect(shortages).toEqual([]);
+  });
+
+  it('reports an empty pantry as a full shortage', () => {
+    const shortages = findStockShortages(
+      [ingredient({ amount: 2, type_id: 'type-1' })],
+      1,
+      [{ product_sku: 'SKU-A', stock: 0 }],
+      new Map([['SKU-A', { product_type_name: 'arroz', unit_multiplier_un: 1 }]]),
+    );
+
+    expect(shortages).toEqual([{ type_id: 'type-1', missingBase: 2 }]);
   });
 });

@@ -34,4 +34,4 @@ jobs:
           EXPO_PUBLIC_API_BASE_URL: https://inventory-manager-backend-zd9h.onrender.com/
           EXPO_PUBLIC_DEV_API_BASE_URL: https://inventory-manager-backend-zd9h.onrender.com/
           EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_bW92aW5nLWhvbmV5YmVlLTkzLmNsZXJrLmFjY291bnRzLmRldiQ
-        run: eas update --channel preview --message "${{ github.event.head_commit.message }}" --non-interactive
+        run: eas update --platform android --channel preview --message "${{ github.event.head_commit.message }}" --non-interactive

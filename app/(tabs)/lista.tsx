@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useAllPantriesOverview, usePantries } from '@/lib/api/pantries';
+import { useAllPantriesOverview, useAllPantriesProducts, usePantries, useUpdatePantryStock } from '@/lib/api/pantries';
+import { useProducts } from '@/lib/api/products';
 import { getItemStatus, getNeededQuantity, type ItemStatus } from '@/lib/helpers/shoppingListItem';
+import { resolveStockPurchase } from '@/lib/helpers/resolveStockPurchase';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
 interface ListItem {
@@ -14,6 +16,7 @@ interface ListItem {
   status: ItemStatus;
   pantryId: string;
   pantryName: string;
+  favoriteSku: string | null;
 }
 
 function ItemRow({
@@ -124,14 +127,30 @@ export default function ListaScreen() {
   const { data: pantries, isLoading: pantriesLoading } = usePantries();
   const [listaPantry, setListaPantry] = useState<string>('all');
   const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const updateStock = useUpdatePantryStock();
+  const [isRegistering, setIsRegistering] = useState(false);
 
   const overviewQueries = useAllPantriesOverview(pantries ?? []);
+  const productsQueries = useAllPantriesProducts(pantries ?? []);
+  const { data: products } = useProducts();
+
+  const productTypeNameBySku = useMemo(
+    () => new Map((products ?? []).map((p) => [p.sku, p.product_type_name ?? ''])),
+    [products],
+  );
+  const productUnitBySku = useMemo(
+    () => new Map((products ?? []).map((p) => [p.sku, p.unit_multiplier_un ?? 1])),
+    [products],
+  );
 
   const isLoading = pantriesLoading || overviewQueries.some((q) => q.isLoading);
 
   const allItems: ListItem[] = [];
+  const productsByPantry: Record<string, { product_sku: string; stock: number }[]> = {};
   (pantries ?? []).forEach((p, i) => {
     const overview = overviewQueries[i]?.data ?? [];
+    const pantryProducts = productsQueries[i]?.data ?? [];
+    productsByPantry[p.id] = pantryProducts;
     overview.forEach((t) => {
       const status = getItemStatus(t);
       if (!status) return;
@@ -144,6 +163,7 @@ export default function ListaScreen() {
         status,
         pantryId: p.id,
         pantryName: p.name,
+        favoriteSku: t.favorite_product_sku,
       });
     });
   });
@@ -156,6 +176,31 @@ export default function ListaScreen() {
 
   function toggle(key: string) {
     setChecked((prev) => ({ ...prev, [key]: !prev[key] }));
+  }
+
+  async function registerPurchase() {
+    const checkedItems = filtered.filter((i) => checked[i.key]);
+    const updates = resolveStockPurchase(
+      checkedItems.map((i) => ({
+        pantryId: i.pantryId,
+        typeName: i.type_name,
+        favoriteSku: i.favoriteSku,
+        needed: i.needed,
+      })),
+      productsByPantry,
+      productTypeNameBySku,
+      productUnitBySku,
+    );
+
+    setIsRegistering(true);
+    try {
+      for (const update of updates) {
+        await updateStock.mutateAsync(update);
+      }
+    } finally {
+      setIsRegistering(false);
+      setChecked({});
+    }
   }
 
   return (
@@ -255,12 +300,17 @@ export default function ListaScreen() {
             {checkedCount > 0 && (
               <View className="px-5 pt-1">
                 <Pressable
-                  className="w-full py-3.5 rounded-xl border border-stone dark:border-[#2E2E2C] bg-white dark:bg-[#1E1E1C] items-center active:opacity-70"
-                  onPress={() => setChecked({})}
+                  className="w-full py-3.5 rounded-xl bg-forest dark:bg-mint items-center active:opacity-80"
+                  disabled={isRegistering}
+                  onPress={registerPurchase}
                 >
-                  <Text className="text-[14px] text-pebble">
-                    Limpiar {checkedCount} marcado{checkedCount > 1 ? 's' : ''}
-                  </Text>
+                  {isRegistering ? (
+                    <ActivityIndicator color="#FFFFFF" />
+                  ) : (
+                    <Text className="text-[14px] font-semibold text-cream dark:text-[#161614]">
+                      Registrar compra de {checkedCount} producto{checkedCount > 1 ? 's' : ''}
+                    </Text>
+                  )}
                 </Pressable>
               </View>
             )}

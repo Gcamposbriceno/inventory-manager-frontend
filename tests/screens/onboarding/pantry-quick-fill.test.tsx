@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import React from 'react';
 import { Animated } from 'react-native';
-import PantryQuickFillScreen from './pantry-quick-fill';
+import PantryQuickFillScreen from '@/app/(onboarding)/pantry-quick-fill';
 
 const types = [{ id: 'type-1', name: 'Tomate', measurement_unit: 'kg' }];
 
