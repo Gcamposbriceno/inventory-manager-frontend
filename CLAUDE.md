@@ -70,7 +70,7 @@ hooks/
   usePersistedState.ts ← AsyncStorage hydration pattern
 lib/
   api/         ← apiFetch client + TanStack Query key factories
-  helpers/     ← pure functions (discountPct, greeting, quantity)
+  helpers/     ← pure functions (greeting, quantity)
   validation/  ← Zod schemas; types derived from schemas
     schemas/auth.ts, schemas/pantry.ts
 constants/     ← static data arrays (quickFillProducts, mockRecipes)

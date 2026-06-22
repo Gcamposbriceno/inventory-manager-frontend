@@ -28,7 +28,11 @@ const UNIT_LABEL: Record<string, string> = {
 export default function PantryQuickFillScreen() {
   const { width: screenWidth } = useWindowDimensions();
   const navigation = useNavigation();
-  const { activePantryId: pantryId } = usePantryContext();
+  const { pantryId: pantryIdParam } = useLocalSearchParams<{ pantryId?: string }>();
+  const { activePantryId } = usePantryContext();
+  // pantry-create passes the new id as a route param; fall back to the active
+  // pantry from context for any other entry point.
+  const pantryId = pantryIdParam ?? activePantryId;
   const { data: types, isLoading } = useQuickFillProductTypes();
 
   const [index, setIndex] = useState(0);
